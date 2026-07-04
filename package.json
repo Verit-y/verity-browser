@@ -10,6 +10,8 @@
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "test": "vitest run",
     "start": "npm run build && electron .",
     "dev": "npm run build && electron . --dev",
     "smoke": "npm run build && electron . --smoke",
