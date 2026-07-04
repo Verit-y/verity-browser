@@ -8,7 +8,7 @@
     "name": "Verity Project",
     "email": "L30Vpn@proton.me"
   },
-  "homepage": "https://github.com/Verit-y/verity",
+  "homepage": "https://github.com/Verit-y/verity-browser",
   "main": "dist/main.js",
   "scripts": {
     "build": "node build.mjs",

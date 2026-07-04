@@ -15,7 +15,7 @@ files:
 publish:
   provider: github
   owner: Verit-y
-  repo: verity
+  repo: verity-browser
 
 win:
   target:

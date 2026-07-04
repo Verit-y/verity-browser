@@ -33,8 +33,8 @@ Grenzen. Komplett in TypeScript, modular aufgebaut, MIT-lizenziert.
 ## Schnellstart
 
 ```bash
-git clone https://github.com/Verit-y/verity
-cd verity
+git clone https://github.com/Verit-y/verity-browser
+cd verity-browser
 npm install
 npm start        # baut & startet
 npm test         # Unit-Tests (Vitest)
