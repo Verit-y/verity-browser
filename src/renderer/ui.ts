@@ -1441,6 +1441,8 @@ function startOnboarding(): void {
   onbRetention = settings.historyRetentionDays;
   const el = $('#onboarding');
   el.hidden = false;
+  // Native Seiten-Views ausblenden, sonst rendern sie über dem Wizard.
+  verity.chrome.panelOpen(true);
   renderOnbStep();
 }
 
@@ -1547,6 +1549,8 @@ function bindOnboarding(): void {
     onbDraft = buildOnbPatch();
     settings = await verity.settings.update(onbDraft);
     $('#onboarding').hidden = true;
+    // Native Seiten-Views wieder einblenden.
+    verity.chrome.panelOpen(false);
     applyThemeById(settings.theme);
     applyAppearance();
   });
