@@ -5,6 +5,7 @@ import {
   TabState,
   ThemeSpec,
   WorkspaceState,
+  HistoryEntry,
 } from '../shared/types';
 import type { VerityApi } from '../preload/preload';
 
@@ -25,7 +26,7 @@ let stats: StatsPayload = {
   threatsBlocked: 0,
   recentBlocked: [],
 };
-let openPanelName: 'settings' | 'themes' | 'dashboard' | 'vault' | 'ai' | null = null;
+let openPanelName: 'settings' | 'themes' | 'dashboard' | 'vault' | 'ai' | 'history' | null = null;
 let themeDraft: ThemeSpec | null = null;
 let appearanceCaps: { compositing: boolean; sessionType: string } | null = null;
 let workspaceState: WorkspaceState = { list: [], activeId: '' };
@@ -329,6 +330,7 @@ const PANEL_TITLES = {
   dashboard: 'Sicherheits-Dashboard',
   vault: 'Passwort-Tresor',
   ai: 'KI-Assistent (lokal)',
+  history: 'Verlauf',
 } as const;
 
 function openPanel(name: typeof openPanelName): void {
@@ -359,6 +361,9 @@ async function renderPanel(): Promise<void> {
       break;
     case 'ai':
       await renderAiPanel(body);
+      break;
+    case 'history':
+      await renderHistoryPanel(body);
       break;
     default:
       break;
@@ -869,6 +874,101 @@ function renderDashboardPanel(body: HTMLElement): void {
     </div>`;
 }
 
+// --- History panel --------------------------------------------------------------
+
+let historyFilter: 'all' | 'visit' | 'search' = 'all';
+let historySearch = '';
+
+async function renderHistoryPanel(body: HTMLElement): Promise<void> {
+  if (settings.historyMode === 'off') {
+    body.innerHTML = `
+      <div class="section">
+        <p class="hint">Der Verlauf ist deaktiviert. Aktiviere ihn in den Einstellungen
+        (Browser → Verlauf), um besuchte Seiten und Suchanfragen zu speichern.</p>
+      </div>`;
+    return;
+  }
+  const entries = await verity.history.query(historySearch, historyFilter);
+  const groups = groupByDay(entries);
+  const filterBtn = (v: typeof historyFilter, label: string) =>
+    `<button class="chip${historyFilter === v ? ' active' : ''}" data-hfilter="${v}">${label}</button>`;
+
+  body.innerHTML = `
+    <div class="section">
+      <div class="hist-toolbar">
+        <input type="text" id="hist-search" placeholder="Verlauf durchsuchen…" value="${escapeHtml(historySearch)}" />
+        <div class="chips">
+          ${filterBtn('all', 'Alle')}${filterBtn('visit', 'Seiten')}${filterBtn('search', 'Suchen')}
+        </div>
+        <button class="btn danger" data-hist-clear>Alles löschen</button>
+      </div>
+      ${entries.length === 0 ? '<p class="hint">Keine Einträge.</p>' : ''}
+      ${groups
+        .map(
+          ([day, items]) => `
+        <div class="hist-day">${escapeHtml(day)}</div>
+        ${items
+          .map(
+            (e) => `
+          <div class="hist-row" data-url="${escapeHtml(e.url)}" data-ts="${e.ts}">
+            <span class="hist-type ${e.type}">${e.type === 'search' ? '🔍' : '🌐'}</span>
+            <span class="hist-main">
+              <span class="hist-title">${escapeHtml(e.title || e.url)}</span>
+              <span class="hist-url">${escapeHtml(e.url)}</span>
+            </span>
+            <span class="hist-time">${new Date(e.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
+            <button class="hist-del" data-del title="Entfernen">✕</button>
+          </div>`
+          )
+          .join('')}`
+        )
+        .join('')}
+    </div>`;
+
+  body.querySelector<HTMLInputElement>('#hist-search')!.addEventListener('input', (e) => {
+    historySearch = (e.target as HTMLInputElement).value;
+    void renderHistoryPanel(body);
+  });
+  for (const chip of body.querySelectorAll<HTMLButtonElement>('[data-hfilter]')) {
+    chip.addEventListener('click', () => {
+      historyFilter = chip.dataset.hfilter as typeof historyFilter;
+      void renderHistoryPanel(body);
+    });
+  }
+  body.querySelector('[data-hist-clear]')!.addEventListener('click', async () => {
+    if (window.confirm('Gesamten Verlauf löschen?')) {
+      await verity.history.clear(0);
+      void renderHistoryPanel(body);
+    }
+  });
+  for (const row of body.querySelectorAll<HTMLElement>('.hist-row')) {
+    const url = row.dataset.url!;
+    const ts = Number(row.dataset.ts);
+    row.querySelector('.hist-main')!.addEventListener('click', () => {
+      verity.tabs.create(url);
+      openPanel(null);
+    });
+    row.querySelector('[data-del]')!.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await verity.history.remove(ts, url);
+      void renderHistoryPanel(body);
+    });
+  }
+}
+
+function groupByDay(entries: HistoryEntry[]): [string, HistoryEntry[]][] {
+  const map = new Map<string, HistoryEntry[]>();
+  const today = new Date().toDateString();
+  const yest = new Date(Date.now() - 86400_000).toDateString();
+  for (const e of entries) {
+    const d = new Date(e.ts).toDateString();
+    const label = d === today ? 'Heute' : d === yest ? 'Gestern' : new Date(e.ts).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+    if (!map.has(label)) map.set(label, []);
+    map.get(label)!.push(e);
+  }
+  return [...map.entries()];
+}
+
 // --- Vault panel ----------------------------------------------------------------
 
 async function renderVaultPanel(body: HTMLElement): Promise<void> {
@@ -1033,7 +1133,11 @@ function bindChrome(): void {
 
   $('#addressform').addEventListener('submit', (e) => {
     e.preventDefault();
-    const url = resolveInput(addressInput().value);
+    const raw = addressInput().value;
+    const url = resolveInput(raw);
+    // Suchanfragen separat erfassen (nur wenn nicht als URL erkannt).
+    const isSearch = !/^[a-z][a-z0-9+.-]*:/i.test(raw.trim()) && !(!/\s/.test(raw.trim()) && raw.includes('.'));
+    if (isSearch && raw.trim()) verity.history.search(url, raw.trim());
     verity.tabs.navigate(null, url);
     addressInput().blur();
   });
@@ -1048,6 +1152,7 @@ function bindChrome(): void {
   $('#btn-settings').addEventListener('click', () => openPanel('settings'));
   $('#btn-themes').addEventListener('click', () => openPanel('themes'));
   $('#btn-dashboard').addEventListener('click', () => openPanel('dashboard'));
+  $('#btn-history').addEventListener('click', () => openPanel('history'));
   $('#btn-vault').addEventListener('click', () => openPanel('vault'));
   $('#panel-close').addEventListener('click', () => openPanel(null));
   $('#panel').addEventListener('click', (e) => {

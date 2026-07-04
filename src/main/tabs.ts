@@ -9,6 +9,7 @@ import { hardenSession } from './security/harden';
 import { injectAntiFingerprint } from './security/fingerprint';
 import { allowHost, Threat, THREAT_LABELS } from './security/threats';
 import { WorkspaceStore } from './workspaces';
+import { HistoryStore } from './history';
 
 // Navigations to this pseudo host (link on the warning page) mean
 // "proceed despite the warning". The .invalid TLD can never resolve.
@@ -54,7 +55,8 @@ export class TabManager {
     private win: BrowserWindow,
     private settings: SettingsStore,
     private stats: StatsTracker,
-    private workspaces: WorkspaceStore
+    private workspaces: WorkspaceStore,
+    private history: HistoryStore
   ) {
     win.on('resize', () => this.layout());
     win.on('maximize', () => this.layout());
@@ -151,7 +153,10 @@ export class TabManager {
     });
 
     const update = () => this.broadcast();
-    wc.on('did-navigate', update);
+    wc.on('did-navigate', (_e, navUrl) => {
+      this.recordHistory(tab, navUrl);
+      update();
+    });
     wc.on('did-navigate-in-page', update);
     wc.on('did-start-loading', update);
     wc.on('did-stop-loading', update);
@@ -163,6 +168,17 @@ export class TabManager {
     this.load(wc, url ?? this.settings.get().homepage);
     this.activate(tab.id);
     return tab.id;
+  }
+
+  /** Records a real page visit (never for private tabs or internal pages). */
+  private recordHistory(tab: Tab, navUrl: string): void {
+    if (tab.isPrivate) return;
+    if (!/^https?:\/\//i.test(navUrl)) return;
+    this.history.add({
+      url: navUrl,
+      title: tab.view.webContents.getTitle() || navUrl,
+      type: 'visit',
+    });
   }
 
   /** Resolves internal URLs (verity://start) and loads everything else as-is. */

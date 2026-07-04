@@ -218,6 +218,16 @@ export interface Workspace {
   accentColor: string;
 }
 
+export interface HistoryEntry {
+  url: string;
+  title: string;
+  ts: number;
+  type: 'visit' | 'search';
+  favicon?: string;
+}
+
+export type HistoryFilter = 'all' | 'visit' | 'search';
+
 export interface WorkspaceState {
   list: Workspace[];
   activeId: string;

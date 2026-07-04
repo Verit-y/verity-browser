@@ -9,6 +9,8 @@ import { listThemes, saveTheme } from './themes';
 import { listPlugins } from './plugins';
 import { detectAppearanceCapabilities } from './appearance';
 import { WorkspaceStore } from './workspaces';
+import { HistoryStore } from './history';
+import { HistoryFilter } from '../shared/types';
 
 export interface IpcContext {
   win: BrowserWindow;
@@ -17,10 +19,11 @@ export interface IpcContext {
   stats: StatsTracker;
   vault: Vault;
   workspaces: WorkspaceStore;
+  history: HistoryStore;
 }
 
 export function registerIpc(ctx: IpcContext): void {
-  const { tabs, settings, stats, vault, workspaces } = ctx;
+  const { tabs, settings, stats, vault, workspaces, history } = ctx;
 
   // --- Tabs ----------------------------------------------------------------
   ipcMain.on('tabs:create', (_e, url?: string, opts?: object) => {
@@ -98,6 +101,23 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('workspaces:reorder', (_e, ids: string[]) => {
     workspaces.reorder(ids);
     return wsState();
+  });
+
+  // --- Verlauf ---------------------------------------------------------------
+  ipcMain.handle('history:query', (_e, search?: string, filter?: HistoryFilter) =>
+    history.query(search ?? '', filter ?? 'all')
+  );
+  ipcMain.handle('history:suggest', (_e, prefix: string) => history.suggest(prefix));
+  ipcMain.on('history:search', (_e, url: string, query: string) =>
+    history.add({ url, title: query, type: 'search' })
+  );
+  ipcMain.handle('history:remove', (_e, ts: number, url: string) => {
+    history.remove(ts, url);
+    return history.query();
+  });
+  ipcMain.handle('history:clear', (_e, sinceMs?: number) => {
+    history.clear(sinceMs ?? 0);
+    return history.query();
   });
 
   // --- Themes -----------------------------------------------------------------

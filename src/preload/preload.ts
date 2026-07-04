@@ -4,6 +4,8 @@ import type {
   AiResult,
   AiStatus,
   AppearanceCapabilities,
+  HistoryEntry,
+  HistoryFilter,
   SettingsData,
   StatsPayload,
   TabState,
@@ -46,6 +48,17 @@ const api = {
   appearance: {
     capabilities: (): Promise<AppearanceCapabilities> =>
       ipcRenderer.invoke('appearance:capabilities'),
+  },
+  history: {
+    query: (search?: string, filter?: HistoryFilter): Promise<HistoryEntry[]> =>
+      ipcRenderer.invoke('history:query', search, filter),
+    suggest: (prefix: string): Promise<HistoryEntry[]> =>
+      ipcRenderer.invoke('history:suggest', prefix),
+    search: (url: string, query: string) => ipcRenderer.send('history:search', url, query),
+    remove: (ts: number, url: string): Promise<HistoryEntry[]> =>
+      ipcRenderer.invoke('history:remove', ts, url),
+    clear: (sinceMs?: number): Promise<HistoryEntry[]> =>
+      ipcRenderer.invoke('history:clear', sinceMs),
   },
   workspaces: {
     get: (): Promise<WorkspaceState> => ipcRenderer.invoke('workspaces:get'),

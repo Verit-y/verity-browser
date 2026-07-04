@@ -11,6 +11,7 @@ import { initUpdater } from './updater';
 import { applyDoH } from './security/doh';
 import { detectAppearanceCapabilities, enableTransparencyFlags } from './appearance';
 import { WorkspaceStore } from './workspaces';
+import { HistoryStore } from './history';
 
 // Disable Chromium features that leak data or profile the user.
 app.commandLine.appendSwitch(
@@ -81,9 +82,10 @@ app.whenReady().then(() => {
   });
 
   const workspaces = new WorkspaceStore();
+  const history = new HistoryStore(settings);
   win = createMainWindow();
-  tabs = new TabManager(win, settings, stats, workspaces);
-  registerIpc({ win, tabs, settings, stats, vault, workspaces });
+  tabs = new TabManager(win, settings, stats, workspaces, history);
+  registerIpc({ win, tabs, settings, stats, vault, workspaces, history });
   buildMenu(win, tabs, workspaces);
 
   // Workspace-Wechsel/Änderungen an die UI spiegeln.
