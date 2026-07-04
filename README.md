@@ -11,13 +11,33 @@ Verity ist ein quelloffener Browser auf Chromium-Basis (Electron) mit eingebaute
 Tracker-Schutz, verschlüsseltem Passwort-Tresor und einem Theme-System ohne
 Grenzen. Komplett in TypeScript, modular aufgebaut, MIT-lizenziert.
 
+> **Hinweis:** Verity ist der Nachfolger von „SP3 Browser". Alle Alt-Daten
+> (Einstellungen, Theme-IDs, Startseite) werden beim ersten Start automatisch migriert.
+
+<!-- SCREENSHOT-PLATZHALTER: nach dem UI-Rebuild echte Screenshots einfügen
+     (Onboarding, Workspaces, Transparenz-Settings, Verlauf-Panel). -->
+
+## Neu in Verity (gegenüber SP3 Browser)
+
+- **Privacy-Onboarding**: verpflichtender 9-Schritt-Wizard beim ersten Start — jede
+  Datenschutz-Entscheidung einzeln erklärt, jederzeit in den Einstellungen änderbar.
+- **Workspaces**: isolierte Arbeitsbereiche mit eigener Session-Partition
+  (echte Cookie-Isolation), Akzentfarbe und Ctrl+1..9-Shortcuts.
+- **Persistenter Verlauf**: optional, lokal **verschlüsselt** (OS-Keychain), mit
+  getrennter Erfassung von Seiten und Suchanfragen, Retention und Suche.
+- **Granulare Transparenz / Glass**: Deckkraft je UI-Bereich, Blur, Eckenradius,
+  Sidebar-Seite, Compact-/Mono-Modus — mit Linux-Compositing-Erkennung.
+- **Reader-Modus, Bild-in-Bild, Session-Wiederherstellung** (opt-in) und eine
+  experimentelle **Mullvad-Erkennung**.
+
 ## Schnellstart
 
 ```bash
 git clone https://github.com/Verit-y/verity
-cd verity-browser
+cd verity
 npm install
-npm start
+npm start        # baut & startet
+npm test         # Unit-Tests (Vitest)
 ```
 
 Installer bauen: `npm run dist` (Details in [docs/BUILD.md](docs/BUILD.md)).
@@ -26,9 +46,15 @@ Installer bauen: `npm run dist` (Details in [docs/BUILD.md](docs/BUILD.md)).
 
 | Funktion | Status |
 |---|---|
-| Tabs, Adressleiste, Suche (DuckDuckGo, Brave, Startpage, Google) | ✅ implementiert |
+| Tabs, Adressleiste, Suche (DuckDuckGo, Brave, Startpage, Mullvad Leta, Google) | ✅ implementiert |
+| Privacy-Onboarding-Wizard (9 Schritte, jederzeit erneut durchlaufbar) | ✅ implementiert |
+| Workspaces mit echter Session-Isolation (Partition je Workspace), Akzentfarbe, Ctrl+1..9 | ✅ implementiert |
+| Persistenter Verlauf (off / Klartext / verschlüsselt), Seiten + Suchen, Retention, Suche | ✅ implementiert |
+| Granulare Transparenz/Glass (Sidebar/Toolbar/Popup, Blur, Radius, Sidebar-Seite, Compact/Mono) | ✅ implementiert |
+| Reader-Modus, Bild-in-Bild, Session-Wiederherstellung (opt-in), Mullvad-Erkennung | ✅ implementiert (Mullvad experimentell) |
+| SP3-Lock-Bridge für Passwörter | 🧩 Stub/Fallback (safeStorage-Tresor als Basis) |
 | Zen-artiges UI: vertikale Sidebar, schwebende Seitenkarte mit abgerundeten Ecken, Glas-Panels | ✅ implementiert |
-| Sidebar mit Pinned-Grid, Workspace-Label, vertikalen Tab-Pills, Compact-Modus | ✅ implementiert |
+| Sidebar mit Pinned-Grid, Workspace-Switcher, vertikalen Tab-Pills, Compact-Modus | ✅ implementiert |
 | Command-Palette (Strg+K): Tabs wechseln, Adresse öffnen, suchen | ✅ implementiert |
 | Eigene Startseite `verity://start` mit Begrüßung, Uhr, Schnellzugriffen | ✅ implementiert |
 | Adblocker und Tracker-Blocker (kuratierte Liste) | ✅ implementiert |
@@ -55,7 +81,8 @@ Installer bauen: `npm run dist` (Details in [docs/BUILD.md](docs/BUILD.md)).
 | EasyList/EasyPrivacy-Filterlisten | 🗺️ Roadmap |
 | Verschlüsselter Sync | 🗺️ Roadmap |
 | Live-Reputationslisten (URLhaus/OpenPhish) für Verity Shield | 🗺️ Roadmap |
-| Workspaces, Tab-Gruppen, Terminal-Panel, Notizen | 🗺️ Roadmap |
+| Tab-Gruppen, Sidebar-Webpanels (Notizen/Kalender), persistentes Blocker-Dashboard | 🗺️ Roadmap |
+| Chrome-Extension-Unterstützung (uBO-artig) | 🗺️ Roadmap (in Electron 33 eingeschränkt) |
 
 Vollständige Planung: [docs/ROADMAP.md](docs/ROADMAP.md)
 
@@ -97,6 +124,9 @@ plugins/           Beispiel-Plugin und Manifest-Spezifikation
 | Strg+K | Command-Palette |
 | Strg+Tab / Strg+Umschalt+Tab | Tabs wechseln |
 | Strg+Alt+S | Split View umschalten |
+| Strg+Alt+R | Reader-Modus |
+| Strg+Alt+P | Bild-in-Bild |
+| Strg+1..9 | Workspace wechseln |
 | Strg+Umschalt+S | Screenshot der Seite |
 | F12 | Entwicklerwerkzeuge |
 
