@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "description": "Verity – der anpassbarste Datenschutz-Browser der Welt. Privacy First. Security First. User Control First. Performance First.",
   "license": "MIT",
-  "author": "Verity Project",
+  "author": {
+    "name": "Verity Project",
+    "email": "L30Vpn@proton.me"
+  },
   "homepage": "https://github.com/Verit-y/verity",
   "main": "dist/main.js",
   "scripts": {
