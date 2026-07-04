@@ -980,9 +980,14 @@ async function renderVaultPanel(body: HTMLElement): Promise<void> {
     return;
   }
   const entries = await verity.vault.list();
+  const bridge = await verity.vault.bridge();
+  const bridgeNote = bridge.available
+    ? '<p class="hint">SP3-Lock erkannt — Autofill-Vorschläge nutzen den externen Vault.</p>'
+    : '<p class="hint">Basis-Funktion. Für vollen Funktionsumfang (geteilter Vault, Autofill) SP3-Lock installieren.</p>';
 
   body.innerHTML = `
     <div class="section">
+      ${bridgeNote}
       <h3>Gespeicherte Zugänge (${entries.length}) – verschlüsselt über den OS-Schlüsselbund</h3>
       ${
         entries.length === 0

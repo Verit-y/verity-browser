@@ -83,6 +83,8 @@ const api = {
   },
   vault: {
     status: (): Promise<VaultStatus> => ipcRenderer.invoke('vault:status'),
+    bridge: (): Promise<{ available: boolean; stub: boolean; socket: string | null }> =>
+      ipcRenderer.invoke('vault:bridge'),
     list: (): Promise<VaultEntry[]> => ipcRenderer.invoke('vault:list'),
     add: (entry: { site: string; username: string; password: string }): Promise<VaultStatus> =>
       ipcRenderer.invoke('vault:add', entry),

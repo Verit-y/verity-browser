@@ -8,6 +8,7 @@ import { Vault } from './vault';
 import { listThemes, saveTheme } from './themes';
 import { listPlugins } from './plugins';
 import { detectAppearanceCapabilities } from './appearance';
+import { sp3LockStatus } from './sp3lock';
 import { WorkspaceStore } from './workspaces';
 import { HistoryStore } from './history';
 import { HistoryFilter } from '../shared/types';
@@ -129,6 +130,7 @@ export function registerIpc(ctx: IpcContext): void {
 
   // --- Vault ---------------------------------------------------------------------
   ipcMain.handle('vault:status', () => vault.status());
+  ipcMain.handle('vault:bridge', () => sp3LockStatus());
   ipcMain.handle('vault:list', () => vault.list());
   ipcMain.handle(
     'vault:add',
