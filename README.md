@@ -14,8 +14,22 @@ Grenzen. Komplett in TypeScript, modular aufgebaut, MIT-lizenziert.
 > **Hinweis:** Verity ist der Nachfolger von „SP3 Browser". Alle Alt-Daten
 > (Einstellungen, Theme-IDs, Startseite) werden beim ersten Start automatisch migriert.
 
-<!-- SCREENSHOT-PLATZHALTER: nach dem UI-Rebuild echte Screenshots einfügen
-     (Onboarding, Workspaces, Transparenz-Settings, Verlauf-Panel). -->
+## Vorschau
+
+![Verity Demo](docs/screenshots/demo.gif)
+
+<p align="center">
+  <img src="docs/screenshots/onboarding.png" width="49%" alt="Privacy-Onboarding" />
+  <img src="docs/screenshots/main.png" width="49%" alt="Hauptoberfläche" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="49%" alt="Einstellungen & Privacy-Level" />
+  <img src="docs/screenshots/history.png" width="49%" alt="Verlauf" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/themes.png" width="49%" alt="Theme-Editor" />
+  <img src="docs/screenshots/dashboard.png" width="49%" alt="Sicherheits-Dashboard" />
+</p>
 
 ## Neu in Verity (gegenüber SP3 Browser)
 

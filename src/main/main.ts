@@ -20,6 +20,8 @@ app.commandLine.appendSwitch(
 );
 
 const isSmokeTest = process.argv.includes('--smoke');
+const isShots = process.argv.includes('--shots');
+const isDemo = process.argv.includes('--demo');
 
 // Settings müssen VOR app.whenReady vorliegen, damit die Chromium-Transparenz-
 // Flags noch greifen. Der Store liest die Datei synchron.
@@ -108,7 +110,56 @@ app.whenReady().then(() => {
   });
   win.loadFile(join(__dirname, 'renderer', 'index.html'));
 
-  if (isSmokeTest) {
+  if (isShots) {
+    // Screenshot-Modus: öffnet nacheinander UI-Zustände und legt PNGs ab.
+    win.show();
+    const dir = process.env.VERITY_SHOTS_DIR || __dirname;
+    const wc = () => win!.webContents;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const shot = async (name: string) => {
+      const img = await wc().capturePage();
+      writeFileSync(join(dir, `shot-${name}.png`), img.toPNG());
+    };
+    const click = (sel: string) =>
+      wc().executeJavaScript(`document.querySelector(${JSON.stringify(sel)})?.click()`).catch(() => {});
+    (async () => {
+      await wait(2500);
+      await shot('main');
+      for (const [btn, name] of [
+        ['#btn-settings', 'settings'],
+        ['#btn-history', 'history'],
+        ['#btn-themes', 'themes'],
+        ['#btn-dashboard', 'dashboard'],
+      ] as const) {
+        await click(btn);
+        await wait(500);
+        await shot(name);
+        await click('#panel-close');
+        await wait(300);
+      }
+      console.log('VERITY_SHOTS_OK');
+      app.exit(0);
+    })().catch(() => app.exit(1));
+  } else if (isDemo) {
+    // Demo-Modus für Bildschirmaufnahme: fährt langsam durch die UI-Zustände.
+    win.setBounds({ x: 0, y: 0, width: 1360, height: 860 });
+    win.show();
+    const click = (sel: string) =>
+      win!.webContents.executeJavaScript(`document.querySelector(${JSON.stringify(sel)})?.click()`).catch(() => {});
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    (async () => {
+      await wait(2000);
+      for (let round = 0; round < 3; round++) {
+        for (const btn of ['#btn-settings', '#btn-history', '#btn-themes', '#btn-dashboard', '#btn-vault']) {
+          await click(btn);
+          await wait(2200);
+          await click('#panel-close');
+          await wait(500);
+        }
+      }
+      app.exit(0);
+    })().catch(() => app.exit(1));
+  } else if (isSmokeTest) {
     // CI/verification mode: boot, capture chrome UI + active page as PNGs
     // (dist/smoke-*.png) for visual review, then exit.
     win.show();

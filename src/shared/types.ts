@@ -169,16 +169,18 @@ export interface SettingsData {
 }
 
 export const DEFAULT_APPEARANCE: AppearanceConfig = {
-  sidebarAlpha: 1,
-  toolbarAlpha: 1,
-  popupAlpha: 0.9,
-  blur: 18,
+  // Sichtbarer Glass-Effekt ab Werk (Deckkraft < 1 = durchscheinend).
+  sidebarAlpha: 0.72,
+  toolbarAlpha: 0.72,
+  popupAlpha: 0.85,
+  blur: 22,
   coupleAll: true,
   cornerRadius: 14,
   sidebarSide: 'left',
   compact: false,
   accentMode: 'accent',
   accentColor: '#7c5cff',
+  // Echte Desktop-Transparenz standardmäßig aus (per Setting aktivierbar).
   nativeTransparency: false,
 };
 

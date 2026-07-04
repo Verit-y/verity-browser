@@ -112,6 +112,8 @@ function applyAppearance(): void {
   document.body.classList.toggle('compact', a.compact);
   document.body.classList.toggle('mono', a.accentMode === 'mono');
   document.body.classList.toggle('sidebar-right', a.sidebarSide === 'right');
+  // Bei echter Fenstertransparenz den App-Hintergrund durchlässig machen.
+  document.body.classList.toggle('native-transparent', !!a.nativeTransparency);
   applyWorkspaceAccent();
   requestAnimationFrame(sendInsets);
 }

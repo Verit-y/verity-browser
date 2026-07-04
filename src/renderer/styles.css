@@ -154,6 +154,9 @@ body.compact {
 /* Monochrom: kein Farbakzent (Akzent = Text). */
 body.mono { --accent: var(--fg); }
 
+/* Echte Fenstertransparenz: App-Hintergrund durchlässig, Desktop scheint durch. */
+body.native-transparent, body.native-transparent #titlebar { background: transparent; }
+
 /* Sidebar rechts statt links. */
 body.sidebar-right.vertical #shell { flex-direction: row-reverse; }
 
