@@ -1,5 +1,5 @@
 import { app, BrowserWindow, session } from 'electron';
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SettingsStore } from './settings';
 import { StatsTracker } from './stats';
@@ -103,7 +103,8 @@ app.whenReady().then(() => {
   });
 
   win.webContents.once('did-finish-load', () => {
-    tabs.create();
+    const restored = settings.get().restoreSession && restoreSession(tabs);
+    if (!restored) tabs.create();
   });
   win.loadFile(join(__dirname, 'renderer', 'index.html'));
 
@@ -131,8 +132,35 @@ app.whenReady().then(() => {
   }
 });
 
-// Privacy: optionally wipe cookies when the browser exits.
+const sessionFile = () => join(app.getPath('userData'), 'session.json');
+
+/** Restores the previous session snapshot; returns true if anything was restored. */
+function restoreSession(tabManager: TabManager): boolean {
+  try {
+    const f = sessionFile();
+    if (!existsSync(f)) return false;
+    const snap = JSON.parse(readFileSync(f, 'utf8')) as { workspaceId: string; url: string }[];
+    if (!Array.isArray(snap) || snap.length === 0) return false;
+    tabManager.restore(snap);
+    return true;
+  } catch (err) {
+    console.error('[verity] session restore failed:', err);
+    return false;
+  }
+}
+
+function saveSession(): void {
+  if (!settings.get().restoreSession || !tabs) return;
+  try {
+    writeFileSync(sessionFile(), JSON.stringify(tabs.snapshot()), 'utf8');
+  } catch (err) {
+    console.error('[verity] session save failed:', err);
+  }
+}
+
+// Privacy: optionally wipe cookies when the browser exits + persist session.
 app.on('before-quit', (event) => {
+  saveSession();
   if (cookiesCleared || !settings || !settings.get().clearCookiesOnExit) return;
   event.preventDefault();
   cookiesCleared = true;

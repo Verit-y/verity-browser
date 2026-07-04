@@ -20,6 +20,34 @@ export const START_URL = 'verity://start';
 
 let nextTabId = 1;
 
+/**
+ * Reader-Modus (in der Seite ausgeführt): extrahiert den wahrscheinlichsten
+ * Artikelinhalt und zeigt ihn als ruhige Leseansicht; erneuter Aufruf schließt
+ * die Ansicht wieder. Best-effort ohne externe Abhängigkeit.
+ */
+const READER_SCRIPT = `(() => {
+  const ID = '__verity_reader__';
+  const open = document.getElementById(ID);
+  if (open) { open.remove(); document.documentElement.style.overflow=''; return 'closed'; }
+  const pick = document.querySelector('article') || document.querySelector('main') || document.body;
+  if (!pick) return 'none';
+  const clone = pick.cloneNode(true);
+  clone.querySelectorAll('script,style,noscript,iframe,nav,header,footer,aside,form,button').forEach(e=>e.remove());
+  const title = (document.querySelector('h1')?.innerText || document.title || '').trim();
+  const ov = document.createElement('div');
+  ov.id = ID;
+  ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;overflow:auto;background:#14161b;color:#e8eaf0;padding:8vh 20px;';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'max-width:720px;margin:0 auto;font:18px/1.7 Georgia,serif;';
+  wrap.innerHTML = '<button style="position:fixed;top:16px;right:20px;padding:8px 14px;background:#232833;color:#e8eaf0;border:1px solid #333;border-radius:8px;cursor:pointer" onclick="document.getElementById(\\'' + ID + '\\').remove();document.documentElement.style.overflow=\\'\\'">Schließen</button>' +
+    (title ? '<h1 style="font:600 30px/1.3 Georgia,serif;margin-bottom:24px">'+title+'</h1>' : '');
+  wrap.appendChild(clone);
+  ov.appendChild(wrap);
+  document.documentElement.style.overflow='hidden';
+  document.body.appendChild(ov);
+  return 'open';
+})()`;
+
 interface Tab {
   id: number;
   view: WebContentsView;
@@ -311,6 +339,53 @@ export class TabManager {
 
   openDevTools(): void {
     this.find(this.activeId)?.view.webContents.openDevTools({ mode: 'detach' });
+  }
+
+  /** Picture-in-Picture für das erste (spielende) Video der aktiven Seite. */
+  togglePiP(): void {
+    const wc = this.find(this.activeId)?.view.webContents;
+    if (!wc) return;
+    wc.executeJavaScript(
+      `(() => {
+        try {
+          if (document.pictureInPictureElement) { document.exitPictureInPicture(); return 'exit'; }
+          const vids = [...document.querySelectorAll('video')];
+          const v = vids.find((x) => !x.paused) || vids[0];
+          if (v && v.requestPictureInPicture) { v.requestPictureInPicture(); return 'enter'; }
+          return 'none';
+        } catch (e) { return 'error'; }
+      })()`,
+      true
+    ).catch(() => {});
+  }
+
+  /** Best-effort Reader-Modus: extrahiert den Hauptinhalt in eine ruhige Leseansicht. */
+  toggleReader(): void {
+    const wc = this.find(this.activeId)?.view.webContents;
+    if (!wc) return;
+    wc.executeJavaScript(READER_SCRIPT, true).catch(() => {});
+  }
+
+  /** Momentaufnahme aller nicht-privaten Tabs (für Session-Wiederherstellung). */
+  snapshot(): { workspaceId: string; url: string }[] {
+    return this.tabs
+      .filter((t) => !t.isPrivate)
+      .map((t) => ({ workspaceId: t.workspaceId, url: t.view.webContents.getURL() }))
+      .filter((s) => /^https?:\/\//i.test(s.url));
+  }
+
+  /** Stellt eine Momentaufnahme wieder her (je Workspace). */
+  restore(snapshot: { workspaceId: string; url: string }[]): void {
+    const byWs = new Map<string, string[]>();
+    for (const s of snapshot) {
+      if (!byWs.has(s.workspaceId)) byWs.set(s.workspaceId, []);
+      byWs.get(s.workspaceId)!.push(s.url);
+    }
+    for (const [wsId, urls] of byWs) {
+      if (!this.workspaces.list().some((w) => w.id === wsId)) continue;
+      this.workspaces.setActive(wsId);
+      for (const url of urls) this.create(url);
+    }
   }
 
   /** Screenshot tool: captures the active page to userData/screenshots. */

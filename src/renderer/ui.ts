@@ -454,6 +454,10 @@ function renderSettingsPanel(body: HTMLElement): void {
         ${sel('data-history-mode', s.historyMode, [['off', 'Kein Verlauf'], ['plain', 'Lokal (unverschlüsselt)'], ['encrypted', 'Lokal (verschlüsselt)']])}
       </div>
       <div class="row">
+        <label>Sitzung wiederherstellen<span class="hint">Beim Start Tabs & Workspaces der letzten Sitzung öffnen.</span></label>
+        <input type="checkbox" data-toggle="restoreSession" ${s.restoreSession ? 'checked' : ''} />
+      </div>
+      <div class="row">
         <label>Script-Blocker (aktiver Tab)<span class="hint">Lädt den Tab ohne JavaScript neu.</span></label>
         <button class="btn" data-toggle-scripts>JS umschalten</button>
       </div>
@@ -1148,6 +1152,8 @@ function bindChrome(): void {
   });
 
   $('#btn-split').addEventListener('click', () => verity.tabs.toggleSplit());
+  $('#btn-reader').addEventListener('click', () => verity.tabs.reader());
+  $('#btn-pip').addEventListener('click', () => verity.tabs.pip());
   $('#btn-sidebar').addEventListener('click', toggleCompact);
   $('#btn-screenshot').addEventListener('click', async () => {
     const path = await verity.tools.screenshot();
@@ -1589,6 +1595,12 @@ async function init(): Promise<void> {
 
   bindOnboarding();
   if (!settings.onboardingComplete) startOnboarding();
+
+  // Experimentelle Mullvad-Erkennung (rein informativ).
+  void verity.net.mullvad().then((active) => {
+    const badge = document.getElementById('mullvad-badge');
+    if (badge) badge.hidden = !active;
+  });
 }
 
 void init();

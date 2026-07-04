@@ -162,6 +162,8 @@ export interface SettingsData {
   historyRetentionDays: number;
   /** Ersteinrichtungs-Wizard bereits abgeschlossen. */
   onboardingComplete: boolean;
+  /** Nach Neustart Tabs/Workspaces wiederherstellen (opt-in). */
+  restoreSession: boolean;
   /** origin -> list of allowed permission names */
   permissions: Record<string, string[]>;
 }
@@ -201,6 +203,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   historyMode: 'encrypted',
   historyRetentionDays: 90,
   onboardingComplete: false,
+  restoreSession: false,
   permissions: {},
 };
 

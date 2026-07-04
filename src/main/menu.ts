@@ -90,6 +90,16 @@ export function buildMenu(win: BrowserWindow, tabs: TabManager, workspaces: Work
           click: () => tabs.toggleSplit(),
         },
         {
+          label: 'Reader-Modus',
+          accelerator: 'CmdOrCtrl+Alt+R',
+          click: () => tabs.toggleReader(),
+        },
+        {
+          label: 'Bild-in-Bild',
+          accelerator: 'CmdOrCtrl+Alt+P',
+          click: () => tabs.togglePiP(),
+        },
+        {
           label: 'Screenshot der Seite',
           accelerator: 'CmdOrCtrl+Shift+S',
           click: () => void tabs.screenshot(),

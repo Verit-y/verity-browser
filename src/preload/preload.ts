@@ -32,6 +32,11 @@ const api = {
     reload: (id: number | null) => ipcRenderer.send('tabs:reload', id),
     toggleScripts: (id: number | null) => ipcRenderer.send('tabs:toggle-scripts', id),
     toggleSplit: () => ipcRenderer.send('tabs:toggle-split'),
+    pip: () => ipcRenderer.send('tabs:pip'),
+    reader: () => ipcRenderer.send('tabs:reader'),
+  },
+  net: {
+    mullvad: (): Promise<boolean> => ipcRenderer.invoke('net:mullvad'),
   },
   chrome: {
     setInsets: (insets: { top: number; left: number; right?: number }) =>

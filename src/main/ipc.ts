@@ -9,6 +9,7 @@ import { listThemes, saveTheme } from './themes';
 import { listPlugins } from './plugins';
 import { detectAppearanceCapabilities } from './appearance';
 import { sp3LockStatus } from './sp3lock';
+import { mullvadActive } from './network';
 import { WorkspaceStore } from './workspaces';
 import { HistoryStore } from './history';
 import { HistoryFilter } from '../shared/types';
@@ -42,6 +43,11 @@ export function registerIpc(ctx: IpcContext): void {
     tabs.toggleScripts(id)
   );
   ipcMain.on('tabs:toggle-split', () => tabs.toggleSplit());
+  ipcMain.on('tabs:pip', () => tabs.togglePiP());
+  ipcMain.on('tabs:reader', () => tabs.toggleReader());
+
+  // --- Netzwerk (experimentell) ----------------------------------------------
+  ipcMain.handle('net:mullvad', () => mullvadActive());
 
   // --- Chrome layout --------------------------------------------------------
   ipcMain.on('chrome:insets', (_e, insets: { top: number; left: number; right?: number }) => {
