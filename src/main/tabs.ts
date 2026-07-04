@@ -1,0 +1,387 @@
+import { BrowserWindow, WebContentsView, session } from 'electron';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { app, shell } from 'electron';
+import { SEARCH_ENGINES, TabState } from '../shared/types';
+import { SettingsStore } from './settings';
+import { StatsTracker } from './stats';
+import { hardenSession } from './security/harden';
+import { injectAntiFingerprint } from './security/fingerprint';
+import { allowHost, Threat, THREAT_LABELS } from './security/threats';
+
+// Navigations to this pseudo host (link on the warning page) mean
+// "proceed despite the warning". The .invalid TLD can never resolve.
+const PROCEED_PREFIX = 'https://proceed.sp3.invalid/?u=';
+
+/** Interne SP3-Startseite (statt einer fremden Homepage). */
+export const START_URL = 'sp3://start';
+
+let nextTabId = 1;
+
+interface Tab {
+  id: number;
+  view: WebContentsView;
+  container: string;
+  isPrivate: boolean;
+  scriptsBlocked: boolean;
+  blockedCount: number;
+}
+
+export interface TabCreateOptions {
+  container?: string;
+  isPrivate?: boolean;
+  scriptsBlocked?: boolean;
+}
+
+/**
+ * Manages page content as WebContentsViews layered inside the main window.
+ * The chrome UI (tabs strip, toolbar, panels) lives in the window's own
+ * webContents; each tab gets its own view and - depending on the container -
+ * its own isolated session partition (cookie isolation).
+ */
+export class TabManager {
+  private tabs: Tab[] = [];
+  private activeId: number | null = null;
+  /** Second pane of the split view, or null when split view is off. */
+  private splitId: number | null = null;
+  private insets = { top: 50, left: 274 };
+  private panelOpen = false;
+
+  constructor(
+    private win: BrowserWindow,
+    private settings: SettingsStore,
+    private stats: StatsTracker
+  ) {
+    win.on('resize', () => this.layout());
+    win.on('maximize', () => this.layout());
+    win.on('unmaximize', () => this.layout());
+    stats.on('tab-block', (wcId: number) => {
+      const tab = this.tabs.find((t) => t.view.webContents.id === wcId);
+      if (tab) {
+        tab.blockedCount++;
+        this.broadcast();
+      }
+    });
+    stats.on('threat', (wcId: number, url: string, threat: Threat) => {
+      const tab = this.tabs.find((t) => t.view.webContents.id === wcId);
+      if (tab) this.showWarning(tab, url, threat);
+    });
+  }
+
+  /** Replaces the blocked navigation with the local SP3 warning page. */
+  private showWarning(tab: Tab, url: string, threat: Threat): void {
+    const params = new URLSearchParams({
+      u: url,
+      t: THREAT_LABELS[threat.type],
+      r: threat.reason,
+    });
+    tab.view.webContents
+      .loadFile(join(__dirname, 'renderer', 'warning.html'), {
+        hash: params.toString(),
+      })
+      .catch(() => {});
+  }
+
+  create(url?: string, opts: TabCreateOptions = {}): number {
+    const isPrivate = !!opts.isPrivate;
+    // Cookie isolation: every non-default container gets its own partition.
+    // Partitions without the 'persist:' prefix are in-memory only - used for
+    // private tabs and temporary containers.
+    const container =
+      opts.container ?? (isPrivate ? `private-${Date.now()}` : 'default');
+    const partition = container === 'default' ? 'persist:default' : container;
+    const ses = session.fromPartition(partition);
+    hardenSession(ses, this.settings, this.stats);
+
+    const view = new WebContentsView({
+      webPreferences: {
+        partition,
+        sandbox: true,
+        contextIsolation: true,
+        nodeIntegration: false,
+        javascript: !opts.scriptsBlocked,
+      },
+    });
+    // Floating-card look: real rounded corners on the native page view.
+    view.setBackgroundColor('#00000000');
+    view.setBorderRadius(TabManager.RADIUS);
+
+    const tab: Tab = {
+      id: nextTabId++,
+      view,
+      container,
+      isPrivate,
+      scriptsBlocked: !!opts.scriptsBlocked,
+      blockedCount: 0,
+    };
+    const wc = view.webContents;
+
+    wc.setWindowOpenHandler(({ url: target }) => {
+      this.create(target, { container, isPrivate });
+      return { action: 'deny' };
+    });
+    if (this.settings.get().webrtcProtection) {
+      wc.setWebRTCIPHandlingPolicy('disable_non_proxied_udp');
+    }
+    if (this.settings.get().fingerprintProtection) {
+      injectAntiFingerprint(wc);
+    }
+
+    // Warning page: "Trotzdem fortfahren" navigates to the proceed pseudo
+    // host; intercept it, whitelist the real host for this session, go there.
+    wc.on('will-navigate', (event, target) => {
+      if (!target.startsWith(PROCEED_PREFIX)) return;
+      event.preventDefault();
+      try {
+        const real = decodeURIComponent(target.slice(PROCEED_PREFIX.length));
+        allowHost(new URL(real).hostname);
+        wc.loadURL(real).catch(() => {});
+      } catch {
+        /* malformed proceed link: stay on the warning page */
+      }
+    });
+
+    const update = () => this.broadcast();
+    wc.on('did-navigate', update);
+    wc.on('did-navigate-in-page', update);
+    wc.on('did-start-loading', update);
+    wc.on('did-stop-loading', update);
+    wc.on('page-title-updated', update);
+    wc.on('did-fail-load', update);
+
+    this.tabs.push(tab);
+    this.win.contentView.addChildView(view);
+    this.load(wc, url ?? this.settings.get().homepage);
+    this.activate(tab.id);
+    return tab.id;
+  }
+
+  /** Resolves internal URLs (sp3://start) and loads everything else as-is. */
+  private load(wc: Electron.WebContents, url: string): void {
+    if (url === START_URL || url === '') {
+      const s = this.settings.get();
+      const engine = SEARCH_ENGINES[s.searchEngine] ?? SEARCH_ENGINES.duckduckgo;
+      const hash = new URLSearchParams({ e: engine.url, n: engine.name }).toString();
+      wc.loadFile(join(__dirname, 'renderer', 'start.html'), { hash }).catch(() => {});
+      return;
+    }
+    wc.loadURL(url).catch(() => {
+      /* offline / canceled navigation */
+    });
+  }
+
+  activate(id: number): void {
+    if (!this.tabs.some((t) => t.id === id)) return;
+    this.activeId = id;
+    if (this.splitId === id) this.splitId = null;
+    this.applyVisibility();
+    this.layout();
+    this.broadcast();
+  }
+
+  /**
+   * Split View: shows the active tab and its neighbor side by side.
+   * Toggling again (or closing one of the two tabs) ends the split.
+   */
+  toggleSplit(): void {
+    if (this.splitId != null) {
+      this.splitId = null;
+    } else {
+      const idx = this.tabs.findIndex((t) => t.id === this.activeId);
+      if (idx === -1 || this.tabs.length < 2) return;
+      const neighbor = this.tabs[idx + 1] ?? this.tabs[idx - 1];
+      this.splitId = neighbor.id;
+    }
+    this.applyVisibility();
+    this.layout();
+    this.broadcast();
+  }
+
+  close(id: number): void {
+    const idx = this.tabs.findIndex((t) => t.id === id);
+    if (idx === -1) return;
+    if (this.splitId === id) this.splitId = null;
+    const [tab] = this.tabs.splice(idx, 1);
+    this.win.contentView.removeChildView(tab.view);
+    tab.view.webContents.close();
+    if (this.activeId === id) {
+      const neighbor = this.tabs[Math.min(idx, this.tabs.length - 1)];
+      if (neighbor) this.activate(neighbor.id);
+      else this.create();
+    } else {
+      this.broadcast();
+    }
+  }
+
+  navigate(id: number | null, url: string): void {
+    const tab = this.find(id);
+    if (tab) this.load(tab.view.webContents, url);
+  }
+
+  back(id: number | null): void {
+    const wc = this.find(id)?.view.webContents;
+    if (wc?.navigationHistory.canGoBack()) wc.navigationHistory.goBack();
+  }
+
+  forward(id: number | null): void {
+    const wc = this.find(id)?.view.webContents;
+    if (wc?.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
+  }
+
+  reload(id: number | null): void {
+    this.find(id)?.view.webContents.reload();
+  }
+
+  closeActive(): void {
+    if (this.activeId != null) this.close(this.activeId);
+  }
+
+  reloadActive(): void {
+    this.reload(this.activeId);
+  }
+
+  cycle(direction: 1 | -1): void {
+    if (this.tabs.length < 2 || this.activeId == null) return;
+    const idx = this.tabs.findIndex((t) => t.id === this.activeId);
+    const next = this.tabs[(idx + direction + this.tabs.length) % this.tabs.length];
+    this.activate(next.id);
+  }
+
+  /** Script blocker: recreates the tab with JavaScript enabled/disabled. */
+  toggleScripts(id: number | null): void {
+    const tab = this.find(id);
+    if (!tab) return;
+    const url = tab.view.webContents.getURL();
+    const opts: TabCreateOptions = {
+      container: tab.container,
+      isPrivate: tab.isPrivate,
+      scriptsBlocked: !tab.scriptsBlocked,
+    };
+    this.close(tab.id);
+    this.create(url, opts);
+  }
+
+  openDevTools(): void {
+    this.find(this.activeId)?.view.webContents.openDevTools({ mode: 'detach' });
+  }
+
+  /** Screenshot tool: captures the active page to userData/screenshots. */
+  async screenshot(): Promise<string | null> {
+    const tab = this.find(this.activeId);
+    if (!tab) return null;
+    const image = await tab.view.webContents.capturePage();
+    const dir = join(app.getPath('userData'), 'screenshots');
+    mkdirSync(dir, { recursive: true });
+    const file = join(dir, `sp3-${new Date().toISOString().replace(/[:.]/g, '-')}.png`);
+    writeFileSync(file, image.toPNG());
+    shell.showItemInFolder(file);
+    return file;
+  }
+
+  setInsets(insets: { top: number; left: number }): void {
+    this.insets = insets;
+    this.layout();
+  }
+
+  setPanelOpen(open: boolean): void {
+    this.panelOpen = open;
+    this.applyVisibility();
+  }
+
+  private applyVisibility(): void {
+    for (const tab of this.tabs) {
+      const shown = tab.id === this.activeId || tab.id === this.splitId;
+      tab.view.setVisible(shown && !this.panelOpen);
+    }
+  }
+
+  /** PNG of the active page (smoke test / visual verification). */
+  async captureActive(): Promise<Buffer | null> {
+    const tab = this.find(this.activeId);
+    if (!tab) return null;
+    const image = await tab.view.webContents.capturePage();
+    return image.toPNG();
+  }
+
+  /** Extracts URL, title and visible text of the active page (for the AI). */
+  async pageText(): Promise<{ url: string; title: string; text: string } | null> {
+    const tab = this.find(this.activeId);
+    if (!tab) return null;
+    const wc = tab.view.webContents;
+    let text = '';
+    try {
+      const result = await wc.executeJavaScript(
+        'document.body ? document.body.innerText : ""',
+        true
+      );
+      text = String(result ?? '').slice(0, 8000);
+    } catch {
+      /* scripts blocked or page gone: return empty text */
+    }
+    return { url: wc.getURL(), title: wc.getTitle(), text };
+  }
+
+  state(): TabState[] {
+    return this.tabs.map((tab) => {
+      const wc = tab.view.webContents;
+      // Interne Seiten (Startseite, Warnseite) zeigen keine file://-Pfade.
+      const raw = wc.getURL();
+      const internal = raw.startsWith('file:') && raw.includes('/renderer/');
+      return {
+        id: tab.id,
+        url: internal ? '' : raw,
+        title: wc.getTitle() || 'Neuer Tab',
+        isLoading: wc.isLoading(),
+        canGoBack: wc.navigationHistory.canGoBack(),
+        canGoForward: wc.navigationHistory.canGoForward(),
+        blockedCount: tab.blockedCount,
+        container: tab.container,
+        isPrivate: tab.isPrivate,
+        scriptsBlocked: tab.scriptsBlocked,
+        active: tab.id === this.activeId,
+        split: tab.id === this.splitId,
+      };
+    });
+  }
+
+  private find(id: number | null): Tab | undefined {
+    return this.tabs.find((t) => t.id === (id ?? this.activeId));
+  }
+
+  // Floating-card geometry: the renderer's insets already include the left/top
+  // gap; GAP is the matching right/bottom gap. The native view has real rounded
+  // corners (setBorderRadius), so it fills the card rect exactly.
+  private static readonly GAP = 10;
+  private static readonly RADIUS = 14;
+  private static readonly SPLIT_GAP = 8;
+
+  private layout(): void {
+    const tab = this.find(this.activeId);
+    if (!tab) return;
+    const { width, height } = this.win.getContentBounds();
+    const { GAP, SPLIT_GAP } = TabManager;
+    const area = {
+      x: this.insets.left,
+      y: this.insets.top,
+      width: Math.max(0, width - this.insets.left - GAP),
+      height: Math.max(0, height - this.insets.top - GAP),
+    };
+    const split = this.splitId != null ? this.find(this.splitId) : undefined;
+    if (!split) {
+      tab.view.setBounds(area);
+      return;
+    }
+    const half = Math.floor((area.width - SPLIT_GAP) / 2);
+    tab.view.setBounds({ ...area, width: half });
+    split.view.setBounds({
+      ...area,
+      x: area.x + half + SPLIT_GAP,
+      width: area.width - half - SPLIT_GAP,
+    });
+  }
+
+  private broadcast(): void {
+    if (this.win.isDestroyed()) return;
+    this.win.webContents.send('tabs:update', this.state());
+  }
+}

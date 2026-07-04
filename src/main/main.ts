@@ -1,0 +1,121 @@
+import { app, BrowserWindow, session } from 'electron';
+import { existsSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { SettingsStore } from './settings';
+import { StatsTracker } from './stats';
+import { TabManager } from './tabs';
+import { Vault } from './vault';
+import { registerIpc } from './ipc';
+import { buildMenu } from './menu';
+import { initUpdater } from './updater';
+import { applyDoH } from './security/doh';
+
+// Disable Chromium features that leak data or profile the user.
+app.commandLine.appendSwitch(
+  'disable-features',
+  'BrowsingTopics,InterestCohort,IdleDetection,HardwareMediaKeyHandling'
+);
+
+const isSmokeTest = process.argv.includes('--smoke');
+
+let win: BrowserWindow | null = null;
+let settings: SettingsStore;
+let stats: StatsTracker;
+let tabs: TabManager;
+let cookiesCleared = false;
+
+// Defense in depth: no webviews, no unexpected child windows anywhere.
+app.on('web-contents-created', (_event, wc) => {
+  wc.on('will-attach-webview', (event) => event.preventDefault());
+});
+
+function createMainWindow(): BrowserWindow {
+  const devIcon = join(__dirname, '..', 'build', 'icon.png');
+  const window = new BrowserWindow({
+    width: 1360,
+    height: 860,
+    minWidth: 760,
+    minHeight: 480,
+    show: false,
+    backgroundColor: '#121317',
+    title: 'SP3 Browser',
+    autoHideMenuBar: true,
+    // Eigene Titelleiste: rahmenlos, Fensterknöpfe als thembares Overlay.
+    titleBarStyle: 'hidden',
+    titleBarOverlay: { color: '#16171c', symbolColor: '#a6a8ad', height: 40 },
+    ...(existsSync(devIcon) ? { icon: devIcon } : {}),
+    webPreferences: {
+      preload: join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  // The chrome UI itself never opens windows.
+  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  return window;
+}
+
+app.whenReady().then(() => {
+  settings = new SettingsStore(join(app.getPath('userData'), 'settings.json'));
+  stats = new StatsTracker();
+  const vault = new Vault();
+
+  applyDoH(settings.get());
+  settings.on('change', (_data, patch) => {
+    if (patch.doh) applyDoH(settings.get());
+  });
+
+  win = createMainWindow();
+  tabs = new TabManager(win, settings, stats);
+  registerIpc({ win, tabs, settings, stats, vault });
+  buildMenu(win, tabs);
+
+  stats.on('update', (payload) => {
+    if (win && !win.isDestroyed()) win.webContents.send('stats:update', payload);
+  });
+
+  win.webContents.once('did-finish-load', () => {
+    tabs.create();
+  });
+  win.loadFile(join(__dirname, 'renderer', 'index.html'));
+
+  if (isSmokeTest) {
+    // CI/verification mode: boot, capture chrome UI + active page as PNGs
+    // (dist/smoke-*.png) for visual review, then exit.
+    win.show();
+    setTimeout(async () => {
+      try {
+        if (win && !win.isDestroyed()) {
+          const chromeShot = await win.webContents.capturePage();
+          writeFileSync(join(__dirname, 'smoke-chrome.png'), chromeShot.toPNG());
+          const pageShot = await tabs.captureActive();
+          if (pageShot) writeFileSync(join(__dirname, 'smoke-page.png'), pageShot);
+        }
+      } catch (err) {
+        console.error('[sp3] smoke capture failed:', err);
+      }
+      console.log('SP3_SMOKE_OK');
+      app.exit(0);
+    }, 5000);
+  } else {
+    win.once('ready-to-show', () => win?.show());
+    initUpdater();
+  }
+});
+
+// Privacy: optionally wipe cookies when the browser exits.
+app.on('before-quit', (event) => {
+  if (cookiesCleared || !settings || !settings.get().clearCookiesOnExit) return;
+  event.preventDefault();
+  cookiesCleared = true;
+  session
+    .fromPartition('persist:default')
+    .clearStorageData({ storages: ['cookies'] })
+    .finally(() => app.quit());
+});
+
+app.on('window-all-closed', () => {
+  app.quit();
+});

@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SP3 Browser. Der Browser, der dir gehört.</title>
+<meta name="description" content="SP3 ist ein quelloffener Browser mit eingebautem Tracker-Schutz, verschlüsseltem Tresor und einem Theme-System ohne Grenzen." />
+<style>
+  :root {
+    --bg: #0b0c0f;
+    --bg-2: #111318;
+    --bg-3: #171a20;
+    --fg: #e9ecf1;
+    --fg-2: #99a1ad;
+    --line: #23272f;
+    --accent: #8ec5ff;
+    --accent-ink: #0b0c0f;
+    /* Radius-Regel der Seite: Buttons sind Pill (999px), Karten/Bilder 16px. */
+    --r-card: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Navigation ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 40;
+    height: 64px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 28px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 0.02em; }
+  .brand img { height: 30px; width: 30px; }
+  .nav-links { display: flex; gap: 22px; font-size: 14px; color: var(--fg-2); margin-left: auto; }
+  .nav-links a:hover { color: var(--fg); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 10px 22px; border-radius: 999px;
+    font-size: 14.5px; font-weight: 600; white-space: nowrap;
+    transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { background: #a5d1ff; }
+  .btn-ghost { border: 1px solid var(--line); color: var(--fg); }
+  .btn-ghost:hover { border-color: var(--accent); }
+  nav .btn { padding: 8px 18px; }
+
+  /* ---------- Hero (Split) ---------- */
+  .hero { padding: 72px 0 88px; }
+  .hero-grid {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 56px; align-items: center;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+    line-height: 1.06; letter-spacing: -0.03em; font-weight: 750;
+  }
+  h1 em { font-style: italic; color: var(--accent); line-height: 1.1; }
+  .hero p { margin: 22px 0 32px; font-size: 17px; color: var(--fg-2); max-width: 46ch; }
+  .hero-ctas { display: flex; gap: 14px; }
+  .hero-visual {
+    border: 1px solid var(--line); border-radius: var(--r-card);
+    background: var(--bg-2); padding: 14px;
+    box-shadow: 0 30px 80px -30px rgba(80, 140, 255, 0.18);
+  }
+  .hero-visual img { border-radius: 10px; }
+
+  /* ---------- Fakten-Band ---------- */
+  .facts { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .facts-row { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .fact { padding: 28px 24px; }
+  .fact + .fact { border-left: 1px solid var(--line); }
+  .fact b { display: block; font-size: 26px; letter-spacing: -0.02em; }
+  .fact span { font-size: 13px; color: var(--fg-2); }
+
+  /* ---------- Sektionen ---------- */
+  section { padding: 96px 0; }
+  h2 {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    letter-spacing: -0.025em; line-height: 1.15; font-weight: 700;
+    max-width: 24ch;
+  }
+  .h2-sub { margin-top: 14px; color: var(--fg-2); max-width: 58ch; }
+
+  /* ---------- Bento ---------- */
+  .bento {
+    margin-top: 48px;
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 150px;
+  }
+  .cell {
+    border: 1px solid var(--line); border-radius: var(--r-card);
+    background: var(--bg-2); padding: 24px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    overflow: hidden; position: relative;
+    transition: border-color 160ms ease, transform 160ms ease;
+  }
+  .cell:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .cell h3 { font-size: 16px; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .cell p { font-size: 13.5px; color: var(--fg-2); }
+  .cell-big { grid-column: span 2; grid-row: span 2; padding: 0; justify-content: flex-end; }
+  .cell-big .cell-img { position: absolute; inset: 0; }
+  .cell-big .cell-img img { width: 100%; height: 100%; object-fit: cover; object-position: top left; opacity: 0.9; }
+  .cell-big .cell-txt {
+    position: relative; padding: 24px;
+    background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 92%, transparent) 45%);
+  }
+  .cell-tall { grid-row: span 2; }
+  .cell-wide { grid-column: span 2; }
+  .cell-tint { background: linear-gradient(145deg, #14202e, var(--bg-2) 70%); }
+  .cell-mark {
+    background: var(--bg-3);
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .cell-mark img { height: 64px; margin-bottom: 14px; opacity: 0.9; }
+
+  /* ---------- Themes ---------- */
+  .themes-band { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .theme-strip {
+    margin-top: 44px; display: flex; gap: 14px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    padding-bottom: 12px; scrollbar-width: thin;
+  }
+  .theme-chip {
+    scroll-snap-align: start; flex: 0 0 200px;
+    border: 1px solid var(--line); border-radius: var(--r-card);
+    background: var(--bg); overflow: hidden;
+    transition: transform 160ms ease, border-color 160ms ease;
+  }
+  .theme-chip:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .swatch { display: flex; height: 64px; }
+  .swatch i { flex: 1; }
+  .theme-chip p { padding: 12px 14px; font-size: 14px; font-weight: 600; }
+  .theme-chip p small { display: block; font-weight: 400; font-size: 11.5px; color: var(--fg-2); margin-top: 2px; }
+  .editor-shot {
+    margin-top: 40px; border: 1px solid var(--line); border-radius: var(--r-card);
+    overflow: hidden; background: var(--bg);
+  }
+
+  /* ---------- Sicherheit ---------- */
+  .sec-cluster { margin-top: 52px; }
+  .sec-cluster + .sec-cluster { margin-top: 44px; padding-top: 44px; border-top: 1px solid var(--line); }
+  .sec-cluster h3 { font-size: 15px; color: var(--accent); margin-bottom: 18px; font-weight: 650; }
+  .sec-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 32px; }
+  .sec-items div b { display: block; font-size: 14.5px; margin-bottom: 3px; }
+  .sec-items div span { font-size: 13px; color: var(--fg-2); }
+
+  /* ---------- Download ---------- */
+  .dl-grid { margin-top: 48px; display: grid; grid-template-columns: 3fr 2fr; gap: 16px; }
+  .dl-main {
+    border: 1px solid var(--line); border-radius: var(--r-card);
+    background: linear-gradient(145deg, #14202e, var(--bg-2) 65%);
+    padding: 40px; display: flex; flex-direction: column; align-items: flex-start; gap: 18px;
+  }
+  .dl-main h3 { font-size: 24px; letter-spacing: -0.02em; }
+  .dl-main p { color: var(--fg-2); font-size: 14.5px; }
+  .dl-side { display: grid; gap: 16px; }
+  .dl-card {
+    border: 1px solid var(--line); border-radius: var(--r-card);
+    background: var(--bg-2); padding: 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .dl-card b { font-size: 16px; }
+  .dl-card span { display: block; font-size: 12.5px; color: var(--fg-2); }
+  .build {
+    margin-top: 18px; border: 1px solid var(--line); border-radius: var(--r-card);
+    background: var(--bg-3); padding: 20px 24px;
+    font-family: Consolas, 'Cascadia Code', monospace; font-size: 13.5px;
+    color: var(--fg-2); overflow-x: auto; white-space: nowrap;
+  }
+  .build b { color: var(--accent); font-weight: 500; }
+
+  /* ---------- Footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 44px 0 60px; }
+  .foot { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .foot .brand { margin-right: auto; }
+  .foot a { font-size: 13.5px; color: var(--fg-2); }
+  .foot a:hover { color: var(--fg); }
+  .foot p { width: 100%; margin-top: 18px; font-size: 12.5px; color: var(--fg-2); }
+
+  /* ---------- Reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity 600ms cubic-bezier(.16,1,.3,1), transform 600ms cubic-bezier(.16,1,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 920px) {
+    .nav-links { display: none; }
+    .hero { padding: 48px 0 64px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+    .facts-row { grid-template-columns: 1fr 1fr; }
+    .fact:nth-child(3) { border-left: none; }
+    .fact:nth-child(1), .fact:nth-child(2) { border-bottom: 1px solid var(--line); }
+    .bento { grid-template-columns: 1fr 1fr; grid-auto-rows: auto; }
+    .cell { min-height: 140px; }
+    .cell-big { grid-column: span 2; min-height: 280px; }
+    .sec-items { grid-template-columns: 1fr; }
+    .dl-grid { grid-template-columns: 1fr; }
+    section { padding: 64px 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="#">
+      <img src="../assets/icon.svg" alt="SP3 Browser" />
+      SP3 Browser
+    </a>
+    <div class="nav-links">
+      <a href="#funktionen">Funktionen</a>
+      <a href="#themes">Themes</a>
+      <a href="#sicherheit">Sicherheit</a>
+      <a href="https://github.com/sp3-browser/sp3-browser">GitHub</a>
+    </div>
+    <a class="btn btn-primary" href="#download">Download</a>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <h1>Der Browser, der <em>dir</em> gehört.</h1>
+      <p>SP3 ist ein quelloffener Browser mit eingebautem Tracker-Schutz,
+         verschlüsseltem Tresor und einem Theme-System ohne Grenzen.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#download">Download</a>
+        <a class="btn btn-ghost" href="https://github.com/sp3-browser/sp3-browser">GitHub</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="../mockups/sp3-main-dark.svg" alt="SP3 Browser im Theme SP3 Dark: Tabs, Adressleiste mit Schutz-Zähler und Seiteninhalt" />
+    </div>
+  </div>
+</header>
+
+<div class="facts">
+  <div class="wrap facts-row">
+    <div class="fact"><b>0</b><span>Telemetrie und Datensammlung</span></div>
+    <div class="fact"><b>7</b><span>Themes vorinstalliert, eigene per Editor</span></div>
+    <div class="fact"><b>3</b><span>Plattformen: Windows, Linux, macOS</span></div>
+    <div class="fact"><b>MIT</b><span>Lizenz, kompletter Quellcode offen</span></div>
+  </div>
+</div>
+
+<section id="funktionen" class="wrap">
+  <h2 class="reveal">Schutz ist eingebaut, kein Add-on.</h2>
+  <p class="h2-sub reveal">Adblocker, Tracker-Blocker, HTTPS-Only und verschlüsseltes DNS laufen ab dem ersten Start. Ohne Erweiterungen, ohne Konfiguration.</p>
+  <div class="bento">
+    <div class="cell cell-big reveal">
+      <div class="cell-img"><img src="../mockups/sp3-security-dashboard.svg" alt="Sicherheits-Dashboard mit Zählern für blockierte Werbung, Tracker und HTTPS-Upgrades" /></div>
+      <div class="cell-txt">
+        <h3>Sicherheits-Dashboard</h3>
+        <p>Jede blockierte Anfrage, jedes HTTPS-Upgrade, jede verweigerte Berechtigung. Live und nachvollziehbar.</p>
+      </div>
+    </div>
+    <div class="cell cell-tall cell-tint reveal">
+      <h3>Container-Tabs</h3>
+      <p>Jeder Container bekommt eine eigene Cookie-Welt. Temporäre Container verschwinden beim Schließen restlos.</p>
+    </div>
+    <div class="cell reveal">
+      <h3>DNS-over-HTTPS</h3>
+      <p>DNS-Anfragen verschlüsselt zu Cloudflare, Quad9 oder Mullvad. Ohne Klartext-Fallback.</p>
+    </div>
+    <div class="cell reveal">
+      <h3>Anti-Fingerprinting</h3>
+      <p>Canvas-Rauschen, generischer User-Agent und WebRTC-Leak-Schutz erschweren Wiedererkennung.</p>
+    </div>
+    <div class="cell cell-wide cell-mark reveal">
+      <img src="../assets/logo-white.svg" alt="" />
+      <p>Quelloffen unter MIT. Jede Schutzfunktion ist im Code nachlesbar.</p>
+    </div>
+    <div class="cell cell-wide reveal">
+      <h3>Verschlüsselter Tresor</h3>
+      <p>Passwörter liegen verschlüsselt über den Schlüsselbund deines Betriebssystems. Nie im Klartext.</p>
+    </div>
+  </div>
+</section>
+
+<section id="themes" class="themes-band">
+  <div class="wrap">
+    <h2 class="reveal">Sieben Themes. Oder deins.</h2>
+    <p class="h2-sub reveal">Farben, Schriften, Radius, Transparenz und Animationen: Der Theme-Editor ändert alles live, exportiert als JSON und importiert Themes aus der Community.</p>
+    <div class="theme-strip reveal">
+      <div class="theme-chip"><div class="swatch"><i style="background:#f6f7f9"></i><i style="background:#ffffff"></i><i style="background:#3d4a5c"></i><i style="background:#1c2127"></i></div><p>SP3 Clean<small>Minimalistisch, hell</small></p></div>
+      <div class="theme-chip"><div class="swatch"><i style="background:#17191d"></i><i style="background:#1f2228"></i><i style="background:#6c8cff"></i><i style="background:#e6e8eb"></i></div><p>SP3 Dark<small>Der Standard</small></p></div>
+      <div class="theme-chip"><div class="swatch"><i style="background:#050805"></i><i style="background:#0a120a"></i><i style="background:#00ff66"></i><i style="background:#103d20"></i></div><p>SP3 Hacker<small>Terminal-Look</small></p></div>
+      <div class="theme-chip"><div class="swatch"><i style="background:#0a0b14"></i><i style="background:#111321"></i><i style="background:#00e5ff"></i><i style="background:#ff2d95"></i></div><p>SP3 Cyber<small>Dunkel mit Neon</small></p></div>
+      <div class="theme-chip"><div class="swatch"><i style="background:#120a0b"></i><i style="background:#1c0f11"></i><i style="background:#ff2d2d"></i><i style="background:#f2dfe1"></i></div><p>SP3 Malware Hunter<small>Security-Fokus</small></p></div>
+      <div class="theme-chip"><div class="swatch"><i style="background:#0a0a0a"></i><i style="background:#111111"></i><i style="background:#6b7280"></i><i style="background:#a8adb3"></i></div><p>SP3 Stealth<small>Maximale Ruhe</small></p></div>
+      <div class="theme-chip"><div class="swatch"><i style="background:#141821"></i><i style="background:#1b2230"></i><i style="background:#7dd3fc"></i><i style="background:#eef2f8"></i></div><p>SP3 Glass<small>Transparente Glasoptik</small></p></div>
+    </div>
+    <div class="editor-shot reveal">
+      <img src="../mockups/sp3-theme-editor.svg" alt="Theme-Editor mit Live-Vorschau, Farbreglern und Import/Export" />
+    </div>
+  </div>
+</section>
+
+<section id="sicherheit" class="wrap">
+  <h2 class="reveal">Was SP3 konkret schützt.</h2>
+  <p class="h2-sub reveal">Drei Bereiche: Netzwerk, Inhalte, Daten. Jede Funktion ist in der Sicherheitsdokumentation im Detail beschrieben.</p>
+
+  <div class="sec-cluster reveal">
+    <h3>Netzwerk</h3>
+    <div class="sec-items">
+      <div><b>HTTPS-Only-Modus</b><span>Unverschlüsselte Seitenaufrufe werden automatisch auf HTTPS angehoben.</span></div>
+      <div><b>DNS-over-HTTPS</b><span>Verschlüsselte Namensauflösung im Modus „secure", frei wählbarer Anbieter.</span></div>
+      <div><b>WebRTC-Leak-Schutz</b><span>Verhindert, dass WebRTC deine lokale IP-Adresse preisgibt.</span></div>
+    </div>
+  </div>
+
+  <div class="sec-cluster reveal">
+    <h3>Inhalte</h3>
+    <div class="sec-items">
+      <div><b>Adblocker und Tracker-Blocker</b><span>Bekannte Werbe- und Analyse-Netzwerke werden vor dem Laden blockiert.</span></div>
+      <div><b>SP3 Shield: Malware- &amp; Phishing-Schutz</b><span>Schadseiten und Marken-Imitationen werden lokal erkannt und mit Warnseite blockiert – ohne Cloud-Abfragen.</span></div>
+      <div><b>Script-Blocker</b><span>JavaScript lässt sich pro Tab mit einem Klick abschalten.</span></div>
+      <div><b>Berechtigungen: standardmäßig nein</b><span>Kamera, Mikrofon und Standort sind blockiert, bis du eine Seite freigibst.</span></div>
+    </div>
+  </div>
+
+  <div class="sec-cluster reveal">
+    <h3>Daten</h3>
+    <div class="sec-items">
+      <div><b>Cookie-Isolierung</b><span>Container und private Tabs nutzen getrennte, teils flüchtige Sitzungen.</span></div>
+      <div><b>Verschlüsselter Tresor</b><span>Passwörter werden über DPAPI, Keychain oder libsecret verschlüsselt.</span></div>
+      <div><b>Automatisches Aufräumen</b><span>Auf Wunsch löscht SP3 beim Beenden alle Cookies.</span></div>
+      <div><b>Lokaler KI-Assistent (opt-in)</b><span>Zusammenfassung, Sicherheits- und Datenschutzanalyse der Seite – über Ollama, strikt auf localhost begrenzt.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="download" class="wrap">
+  <h2 class="reveal">Hol dir SP3.</h2>
+  <div class="dl-grid">
+    <div class="dl-main reveal">
+      <h3>Windows</h3>
+      <p>Installer (NSIS) mit automatischen Updates über GitHub Releases. Windows 10 und neuer, 64-Bit.</p>
+      <a class="btn btn-primary" href="https://github.com/sp3-browser/sp3-browser/releases">Download</a>
+    </div>
+    <div class="dl-side">
+      <div class="dl-card reveal">
+        <div><b>Linux</b><span>AppImage und .deb</span></div>
+        <a class="btn btn-ghost" href="https://github.com/sp3-browser/sp3-browser/releases">Download</a>
+      </div>
+      <div class="dl-card reveal">
+        <div><b>macOS</b><span>DMG, ab macOS 12</span></div>
+        <a class="btn btn-ghost" href="https://github.com/sp3-browser/sp3-browser/releases">Download</a>
+      </div>
+    </div>
+  </div>
+  <div class="build reveal">
+    <b>$</b> git clone https://github.com/sp3-browser/sp3-browser &amp;&amp; cd sp3-browser &amp;&amp; npm install &amp;&amp; npm start
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="#">
+      <img src="../assets/icon.svg" alt="" style="height:26px;width:26px" />
+      SP3 Browser
+    </a>
+    <a href="https://github.com/sp3-browser/sp3-browser">GitHub</a>
+    <a href="../docs/SECURITY.md">Sicherheitsdokumentation</a>
+    <a href="../docs/THEMES.md">Theme-Format</a>
+    <a href="../LICENSE">MIT-Lizenz</a>
+    <p>SP3 Browser ist ein Open-Source-Projekt. Privacy First. Security First. User Control First. Performance First.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  })();
+</script>
+
+</body>
+</html>

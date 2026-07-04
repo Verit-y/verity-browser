@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" font-family="Segoe UI, system-ui, sans-serif">
+  <!-- SP3 Browser Mockup: Theme-Editor mit Live-Vorschau -->
+  <rect width="1200" height="760" rx="14" fill="#101216"/>
+  <rect x="0" y="0" width="1200" height="64" fill="#1f2228"/>
+  <text x="40" y="40" fill="#e6e8eb" font-size="20" font-weight="600">Themes &amp; Theme-Editor</text>
+  <text x="1160" y="40" fill="#9aa3ad" font-size="18" text-anchor="end">×</text>
+
+  <!-- Theme-Karten -->
+  <text x="40" y="104" fill="#9aa3ad" font-size="12" letter-spacing="2">INSTALLIERTE THEMES</text>
+  <g font-size="13">
+    <!-- Clean -->
+    <rect x="40" y="120" width="150" height="104" rx="10" fill="#17191d" stroke="#2c313a"/>
+    <rect x="41" y="121" width="148" height="44" fill="#f6f7f9"/>
+    <rect x="115" y="121" width="37" height="44" fill="#3d4a5c"/>
+    <rect x="152" y="121" width="37" height="44" fill="#1c2127"/>
+    <text x="54" y="196" fill="#e6e8eb">SP3 Clean</text>
+    <!-- Dark (aktiv) -->
+    <rect x="206" y="120" width="150" height="104" rx="10" fill="#17191d" stroke="#6c8cff" stroke-width="2"/>
+    <rect x="208" y="122" width="146" height="44" fill="#17191d"/>
+    <rect x="281" y="122" width="36" height="44" fill="#6c8cff"/>
+    <rect x="317" y="122" width="37" height="44" fill="#e6e8eb"/>
+    <text x="220" y="196" fill="#e6e8eb">SP3 Dark ✓</text>
+    <!-- Hacker -->
+    <rect x="372" y="120" width="150" height="104" rx="10" fill="#17191d" stroke="#2c313a"/>
+    <rect x="373" y="121" width="148" height="44" fill="#050805"/>
+    <rect x="447" y="121" width="74" height="44" fill="#00ff66"/>
+    <text x="386" y="196" fill="#e6e8eb">SP3 Hacker</text>
+    <!-- Cyber -->
+    <rect x="538" y="120" width="150" height="104" rx="10" fill="#17191d" stroke="#2c313a"/>
+    <rect x="539" y="121" width="148" height="44" fill="#0a0b14"/>
+    <rect x="613" y="121" width="37" height="44" fill="#00e5ff"/>
+    <rect x="650" y="121" width="37" height="44" fill="#ff2d95"/>
+    <text x="552" y="196" fill="#e6e8eb">SP3 Cyber</text>
+    <!-- Malware Hunter -->
+    <rect x="704" y="120" width="150" height="104" rx="10" fill="#17191d" stroke="#2c313a"/>
+    <rect x="705" y="121" width="148" height="44" fill="#120a0b"/>
+    <rect x="779" y="121" width="74" height="44" fill="#ff2d2d"/>
+    <text x="718" y="196" fill="#e6e8eb">Malware Hunter</text>
+    <!-- Stealth -->
+    <rect x="870" y="120" width="150" height="104" rx="10" fill="#17191d" stroke="#2c313a"/>
+    <rect x="871" y="121" width="148" height="44" fill="#0a0a0a"/>
+    <rect x="945" y="121" width="74" height="44" fill="#6b7280"/>
+    <text x="884" y="196" fill="#e6e8eb">SP3 Stealth</text>
+    <!-- Glass -->
+    <rect x="1036" y="120" width="122" height="104" rx="10" fill="#17191d" stroke="#2c313a"/>
+    <rect x="1037" y="121" width="120" height="44" fill="#141821" opacity="0.7"/>
+    <rect x="1097" y="121" width="60" height="44" fill="#7dd3fc" opacity="0.8"/>
+    <text x="1050" y="196" fill="#e6e8eb">SP3 Glass</text>
+  </g>
+
+  <!-- Editor links -->
+  <text x="40" y="280" fill="#9aa3ad" font-size="12" letter-spacing="2">THEME-EDITOR · LIVE-VORSCHAU</text>
+  <rect x="40" y="298" width="560" height="400" rx="12" fill="#17191d" stroke="#2c313a"/>
+  <g font-size="13" fill="#e6e8eb">
+    <text x="64" y="336">Name</text>
+    <rect x="240" y="318" width="330" height="28" rx="6" fill="#101216" stroke="#2c313a"/>
+    <text x="254" y="337" fill="#9aa3ad">Mein Nachtblau</text>
+
+    <text x="64" y="380">Hintergrund</text>
+    <rect x="240" y="364" width="44" height="24" rx="5" fill="#17191d" stroke="#2c313a"/>
+    <text x="64" y="416">Akzent</text>
+    <rect x="240" y="400" width="44" height="24" rx="5" fill="#6c8cff"/>
+    <text x="64" y="452">Text</text>
+    <rect x="240" y="436" width="44" height="24" rx="5" fill="#e6e8eb"/>
+    <text x="64" y="488">Rahmen</text>
+    <rect x="240" y="472" width="44" height="24" rx="5" fill="#2c313a"/>
+
+    <text x="64" y="532">Eckenradius</text>
+    <rect x="240" y="524" width="330" height="4" rx="2" fill="#2c313a"/>
+    <circle cx="420" cy="526" r="8" fill="#6c8cff"/>
+    <text x="64" y="572">Transparenz</text>
+    <rect x="240" y="564" width="330" height="4" rx="2" fill="#2c313a"/>
+    <circle cx="530" cy="566" r="8" fill="#6c8cff"/>
+  </g>
+  <rect x="64" y="630" width="120" height="36" rx="8" fill="none" stroke="#2c313a"/>
+  <text x="124" y="653" fill="#e6e8eb" font-size="13" text-anchor="middle">Importieren</text>
+  <rect x="200" y="630" width="120" height="36" rx="8" fill="none" stroke="#2c313a"/>
+  <text x="260" y="653" fill="#e6e8eb" font-size="13" text-anchor="middle">Exportieren</text>
+  <rect x="336" y="630" width="234" height="36" rx="8" fill="#6c8cff"/>
+  <text x="453" y="653" fill="#0c0e12" font-size="13" font-weight="700" text-anchor="middle">Speichern &amp; anwenden</text>
+
+  <!-- Live-Vorschau rechts: Mini-Browser -->
+  <rect x="640" y="298" width="518" height="400" rx="12" fill="#17191d" stroke="#2c313a"/>
+  <g transform="translate(664,322)">
+    <rect width="470" height="352" rx="10" fill="#101216"/>
+    <rect width="470" height="30" rx="10" fill="#1f2228"/>
+    <rect x="10" y="5" width="120" height="22" rx="6" fill="#17191d" stroke="#2c313a"/>
+    <rect x="138" y="9" width="60" height="14" rx="5" fill="#1a1d22"/>
+    <rect x="0" y="30" width="470" height="34" fill="#1f2228"/>
+    <rect x="60" y="37" width="330" height="20" rx="10" fill="#101216" stroke="#6c8cff"/>
+    <circle cx="20" cy="47" r="6" fill="none" stroke="#9aa3ad" stroke-width="1.5"/>
+    <circle cx="42" cy="47" r="6" fill="none" stroke="#9aa3ad" stroke-width="1.5"/>
+    <rect x="30" y="96" width="240" height="16" rx="5" fill="#23262d"/>
+    <rect x="30" y="126" width="300" height="9" rx="4" fill="#1e2127"/>
+    <rect x="30" y="144" width="270" height="9" rx="4" fill="#1e2127"/>
+    <rect x="30" y="176" width="90" height="26" rx="7" fill="#6c8cff"/>
+    <!-- Fuchs-Logo in Vorschau -->
+    <g transform="translate(340,200) scale(0.22)" opacity="0.25">
+      <path d="M306 148 H336 A104 104 0 0 1 336 356 H286" fill="none" stroke="#e6e8eb" stroke-width="54" stroke-linecap="round"/>
+      <path d="M206 104 C220 122 232 138 240 152 C246 142 252 128 262 116 C268 134 270 148 268 160 C292 168 312 184 322 206 C330 214 332 222 326 230 C310 238 290 240 272 238 C260 256 256 280 264 308 C274 348 288 392 298 434 C282 424 266 404 254 378 C234 338 214 282 204 226 C198 190 198 144 206 104 Z" fill="#e6e8eb"/>
+    </g>
+  </g>
+</svg>

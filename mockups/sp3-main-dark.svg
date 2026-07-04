@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" font-family="Segoe UI, system-ui, sans-serif">
+  <!-- SP3 Browser Mockup: Hauptfenster, Theme "SP3 Dark" -->
+  <defs>
+    <linearGradient id="m-fox" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#7a828c"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="760" rx="14" fill="#101216"/>
+
+  <!-- Tab-Leiste -->
+  <rect x="0" y="0" width="1200" height="42" rx="14" fill="#1f2228"/>
+  <rect x="0" y="28" width="1200" height="14" fill="#1f2228"/>
+  <g transform="translate(14,8)">
+    <!-- Logo klein -->
+    <g transform="scale(0.07) translate(-150,-60)">
+      <path d="M306 148 H336 A104 104 0 0 1 336 356 H286" fill="none" stroke="#6c8cff" stroke-width="54" stroke-linecap="round"/>
+      <path d="M206 104 C220 122 232 138 240 152 C246 142 252 128 262 116 C268 134 270 148 268 160 C292 168 312 184 322 206 C330 214 332 222 326 230 C310 238 290 240 272 238 C260 256 256 280 264 308 C274 348 288 392 298 434 C282 424 266 404 254 378 C234 338 214 282 204 226 C198 190 198 144 206 104 Z" fill="url(#m-fox)"/>
+    </g>
+  </g>
+  <!-- Aktiver Tab -->
+  <g transform="translate(52,6)">
+    <rect width="218" height="36" rx="9" fill="#17191d" stroke="#2c313a"/>
+    <text x="14" y="23" fill="#e6e8eb" font-size="13">SP3 Browser – Datenschutz</text>
+    <rect x="170" y="9" width="26" height="17" rx="8" fill="#6c8cff"/>
+    <text x="183" y="22" fill="#0c0e12" font-size="11" font-weight="700" text-anchor="middle">12</text>
+    <text x="206" y="23" fill="#9aa3ad" font-size="13">×</text>
+  </g>
+  <!-- Inaktive Tabs -->
+  <g fill="#9aa3ad" font-size="13">
+    <rect x="278" y="6" width="180" height="36" rx="9" fill="#1a1d22"/>
+    <text x="292" y="29">Dokumentation</text>
+    <rect x="466" y="6" width="200" height="36" rx="9" fill="#1a1d22"/>
+    <text x="480" y="29" fill="#6c8cff" font-size="10">PRIVAT</text>
+    <text x="524" y="29">DuckDuckGo</text>
+    <rect x="674" y="14" width="20" height="20" rx="6" fill="#1a1d22"/>
+    <text x="680" y="29" fill="#9aa3ad">+</text>
+  </g>
+
+  <!-- Toolbar -->
+  <rect x="0" y="42" width="1200" height="50" fill="#1f2228"/>
+  <g stroke="#9aa3ad" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 60 22 67l8 7"/>
+    <path d="M52 60l8 7-8 7"/>
+    <path d="M88 74a8 8 0 1 1-2.3-5.7M88 60v6h-6"/>
+  </g>
+  <!-- Adressleiste -->
+  <rect x="110" y="53" width="880" height="28" rx="14" fill="#17191d" stroke="#2c313a"/>
+  <path d="M126 60l-6 2.6v4.3c0 3.9 2.6 6.9 6 8.6 3.4-1.7 6-4.7 6-8.6v-4.3l-6-2.6z" fill="none" stroke="#3ecf8e" stroke-width="1.6"/>
+  <text x="140" y="71" fill="#3ecf8e" font-size="11" font-weight="600">12</text>
+  <text x="160" y="71.5" fill="#e6e8eb" font-size="13">https://sp3-browser.org</text>
+  <text x="965" y="72" fill="#9aa3ad" font-size="13" text-anchor="end">⊕</text>
+  <!-- Toolbar-Icons rechts -->
+  <g stroke="#9aa3ad" stroke-width="1.7" fill="none" stroke-linecap="round">
+    <path d="M1010 75V62m8 13V58m8 17v-8m6 8h-26"/>
+    <circle cx="1062" cy="67" r="9"/>
+    <rect x="1090" y="63" width="14" height="11" rx="2"/>
+    <path d="M1093 63v-3a4 4 0 0 1 8 0v3"/>
+    <circle cx="1136" cy="67" r="3.2"/>
+    <path d="M1136 56v4m0 14v4m11-11h-4m-14 0h-4m16.5-7.5-2.8 2.8m-9.4 9.4-2.8 2.8m0-15 2.8 2.8m9.4 9.4 2.8 2.8" stroke-width="1.4"/>
+  </g>
+
+  <!-- Seitenbereich -->
+  <rect x="0" y="92" width="1200" height="668" fill="#17191d"/>
+  <!-- Hero-Skeleton -->
+  <rect x="80" y="150" width="540" height="30" rx="6" fill="#23262d"/>
+  <rect x="80" y="196" width="420" height="16" rx="5" fill="#1e2127"/>
+  <rect x="80" y="222" width="470" height="16" rx="5" fill="#1e2127"/>
+  <rect x="80" y="262" width="140" height="38" rx="9" fill="#6c8cff"/>
+  <text x="150" y="286" fill="#0c0e12" font-size="14" font-weight="700" text-anchor="middle">Download</text>
+  <!-- Card-Skeletons -->
+  <g fill="#1e2127">
+    <rect x="80" y="350" width="330" height="200" rx="12"/>
+    <rect x="434" y="350" width="330" height="200" rx="12"/>
+    <rect x="788" y="350" width="330" height="200" rx="12"/>
+  </g>
+  <g fill="#2a2e36">
+    <rect x="104" y="378" width="160" height="14" rx="4"/>
+    <rect x="458" y="378" width="160" height="14" rx="4"/>
+    <rect x="812" y="378" width="160" height="14" rx="4"/>
+    <rect x="104" y="406" width="270" height="10" rx="4"/>
+    <rect x="458" y="406" width="270" height="10" rx="4"/>
+    <rect x="812" y="406" width="270" height="10" rx="4"/>
+    <rect x="104" y="424" width="240" height="10" rx="4"/>
+    <rect x="458" y="424" width="240" height="10" rx="4"/>
+    <rect x="812" y="424" width="240" height="10" rx="4"/>
+  </g>
+  <!-- Fuchs-Wasserzeichen -->
+  <g transform="translate(880,560) scale(0.35)" opacity="0.10">
+    <path d="M306 148 H336 A104 104 0 0 1 336 356 H286" fill="none" stroke="#e6e8eb" stroke-width="54" stroke-linecap="round"/>
+    <path d="M206 104 C220 122 232 138 240 152 C246 142 252 128 262 116 C268 134 270 148 268 160 C292 168 312 184 322 206 C330 214 332 222 326 230 C310 238 290 240 272 238 C260 256 256 280 264 308 C274 348 288 392 298 434 C282 424 266 404 254 378 C234 338 214 282 204 226 C198 190 198 144 206 104 Z" fill="#e6e8eb"/>
+  </g>
+</svg>

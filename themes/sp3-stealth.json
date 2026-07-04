@@ -1,0 +1,20 @@
+{
+  "id": "sp3-stealth",
+  "name": "SP3 Stealth",
+  "author": "SP3 Project",
+  "dark": true,
+  "colors": {
+    "bg": "#0a0a0a",
+    "bgElevated": "#111111",
+    "fg": "#a8adb3",
+    "fgMuted": "#5c6166",
+    "accent": "#6b7280",
+    "accentFg": "#0a0a0a",
+    "border": "#1f2227",
+    "danger": "#b3454f",
+    "success": "#4f8f73"
+  },
+  "radius": 6,
+  "transparency": 1,
+  "animations": false
+}

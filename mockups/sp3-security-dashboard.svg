@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" font-family="Segoe UI, system-ui, sans-serif">
+  <!-- SP3 Browser Mockup: Sicherheits-Dashboard -->
+  <rect width="1200" height="760" rx="14" fill="#101216"/>
+  <rect x="0" y="0" width="1200" height="64" fill="#1f2228"/>
+  <text x="40" y="40" fill="#e6e8eb" font-size="20" font-weight="600">Sicherheits-Dashboard</text>
+  <text x="1160" y="40" fill="#9aa3ad" font-size="18" text-anchor="end">×</text>
+
+  <!-- Stat-Karten -->
+  <g>
+    <rect x="40" y="100" width="260" height="120" rx="12" fill="#17191d" stroke="#2c313a"/>
+    <text x="64" y="160" fill="#6c8cff" font-size="40" font-weight="700">1.284</text>
+    <text x="64" y="190" fill="#9aa3ad" font-size="13">Werbung blockiert</text>
+
+    <rect x="326" y="100" width="260" height="120" rx="12" fill="#17191d" stroke="#2c313a"/>
+    <text x="350" y="160" fill="#6c8cff" font-size="40" font-weight="700">2.347</text>
+    <text x="350" y="190" fill="#9aa3ad" font-size="13">Tracker blockiert</text>
+
+    <rect x="612" y="100" width="260" height="120" rx="12" fill="#17191d" stroke="#2c313a"/>
+    <text x="636" y="160" fill="#3ecf8e" font-size="40" font-weight="700">96</text>
+    <text x="636" y="190" fill="#9aa3ad" font-size="13">HTTPS-Upgrades</text>
+
+    <rect x="898" y="100" width="260" height="120" rx="12" fill="#17191d" stroke="#2c313a"/>
+    <text x="922" y="160" fill="#ff5562" font-size="40" font-weight="700">31</text>
+    <text x="922" y="190" fill="#9aa3ad" font-size="13">Berechtigungen verweigert</text>
+  </g>
+
+  <!-- Schutz-Chips -->
+  <text x="40" y="280" fill="#9aa3ad" font-size="12" letter-spacing="2">AKTIVE SCHUTZFUNKTIONEN</text>
+  <g font-size="12">
+    <rect x="40" y="298" width="104" height="26" rx="13" fill="none" stroke="#3ecf8e"/>
+    <text x="92" y="315" fill="#3ecf8e" text-anchor="middle">Adblocker ✓</text>
+    <rect x="156" y="298" width="132" height="26" rx="13" fill="none" stroke="#3ecf8e"/>
+    <text x="222" y="315" fill="#3ecf8e" text-anchor="middle">Tracker-Blocker ✓</text>
+    <rect x="300" y="298" width="110" height="26" rx="13" fill="none" stroke="#3ecf8e"/>
+    <text x="355" y="315" fill="#3ecf8e" text-anchor="middle">HTTPS-Only ✓</text>
+    <rect x="422" y="298" width="148" height="26" rx="13" fill="none" stroke="#3ecf8e"/>
+    <text x="496" y="315" fill="#3ecf8e" text-anchor="middle">DNS-over-HTTPS ✓</text>
+    <rect x="582" y="298" width="160" height="26" rx="13" fill="none" stroke="#3ecf8e"/>
+    <text x="662" y="315" fill="#3ecf8e" text-anchor="middle">Anti-Fingerprinting ✓</text>
+    <rect x="754" y="298" width="134" height="26" rx="13" fill="none" stroke="#3ecf8e"/>
+    <text x="821" y="315" fill="#3ecf8e" text-anchor="middle">WebRTC-Schutz ✓</text>
+    <rect x="900" y="298" width="158" height="26" rx="13" fill="none" stroke="#ff5562"/>
+    <text x="979" y="315" fill="#ff5562" text-anchor="middle">Cookie-Autolöschung ✕</text>
+  </g>
+
+  <!-- Zuletzt blockiert -->
+  <text x="40" y="380" fill="#9aa3ad" font-size="12" letter-spacing="2">ZULETZT BLOCKIERT</text>
+  <rect x="40" y="398" width="1118" height="300" rx="12" fill="#17191d" stroke="#2c313a"/>
+  <g font-size="13">
+    <text x="64" y="430" fill="#9aa3ad">Host</text>
+    <text x="600" y="430" fill="#9aa3ad">Typ</text>
+    <text x="820" y="430" fill="#9aa3ad">Zeit</text>
+    <line x1="56" y1="442" x2="1142" y2="442" stroke="#2c313a"/>
+
+    <text x="64" y="472" fill="#e6e8eb">doubleclick.net</text>
+    <text x="600" y="472" fill="#ff5562">Werbung</text>
+    <text x="820" y="472" fill="#9aa3ad">14:32:18</text>
+    <text x="64" y="504" fill="#e6e8eb">google-analytics.com</text>
+    <text x="600" y="504" fill="#6c8cff">Tracker</text>
+    <text x="820" y="504" fill="#9aa3ad">14:32:17</text>
+    <text x="64" y="536" fill="#e6e8eb">connect.facebook.net</text>
+    <text x="600" y="536" fill="#6c8cff">Tracker</text>
+    <text x="820" y="536" fill="#9aa3ad">14:32:15</text>
+    <text x="64" y="568" fill="#e6e8eb">hotjar.com</text>
+    <text x="600" y="568" fill="#6c8cff">Tracker</text>
+    <text x="820" y="568" fill="#9aa3ad">14:31:58</text>
+    <text x="64" y="600" fill="#e6e8eb">taboola.com</text>
+    <text x="600" y="600" fill="#ff5562">Werbung</text>
+    <text x="820" y="600" fill="#9aa3ad">14:31:42</text>
+    <text x="64" y="632" fill="#e6e8eb">scorecardresearch.com</text>
+    <text x="600" y="632" fill="#6c8cff">Tracker</text>
+    <text x="820" y="632" fill="#9aa3ad">14:31:30</text>
+    <text x="64" y="664" fill="#e6e8eb">amazon-adsystem.com</text>
+    <text x="600" y="664" fill="#ff5562">Werbung</text>
+    <text x="820" y="664" fill="#9aa3ad">14:31:12</text>
+  </g>
+
+  <!-- Fuchs-Wasserzeichen -->
+  <g transform="translate(1000,440) scale(0.3)" opacity="0.08">
+    <path d="M306 148 H336 A104 104 0 0 1 336 356 H286" fill="none" stroke="#e6e8eb" stroke-width="54" stroke-linecap="round"/>
+    <path d="M206 104 C220 122 232 138 240 152 C246 142 252 128 262 116 C268 134 270 148 268 160 C292 168 312 184 322 206 C330 214 332 222 326 230 C310 238 290 240 272 238 C260 256 256 280 264 308 C274 348 288 392 298 434 C282 424 266 404 254 378 C234 338 214 282 204 226 C198 190 198 144 206 104 Z" fill="#e6e8eb"/>
+  </g>
+</svg>

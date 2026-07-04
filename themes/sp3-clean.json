@@ -1,0 +1,20 @@
+{
+  "id": "sp3-clean",
+  "name": "SP3 Clean",
+  "author": "SP3 Project",
+  "dark": false,
+  "colors": {
+    "bg": "#f6f7f9",
+    "bgElevated": "#ffffff",
+    "fg": "#1c2127",
+    "fgMuted": "#6b7480",
+    "accent": "#3d4a5c",
+    "accentFg": "#ffffff",
+    "border": "#dde1e6",
+    "danger": "#d6455a",
+    "success": "#2e9e6b"
+  },
+  "radius": 10,
+  "transparency": 1,
+  "animations": true
+}

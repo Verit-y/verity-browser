@@ -1,0 +1,20 @@
+{
+  "id": "sp3-glass",
+  "name": "SP3 Glass",
+  "author": "SP3 Project",
+  "dark": true,
+  "colors": {
+    "bg": "#141821",
+    "bgElevated": "#1b2230",
+    "fg": "#eef2f8",
+    "fgMuted": "#8d99ad",
+    "accent": "#7dd3fc",
+    "accentFg": "#0a1018",
+    "border": "#2d3850",
+    "danger": "#fb7185",
+    "success": "#5eead4"
+  },
+  "radius": 14,
+  "transparency": 0.82,
+  "animations": true
+}

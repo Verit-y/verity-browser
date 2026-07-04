@@ -1,0 +1,21 @@
+{
+  "id": "sp3-dark",
+  "name": "SP3 Dark",
+  "author": "SP3 Project",
+  "dark": true,
+  "colors": {
+    "bg": "#17181c",
+    "bgElevated": "#23252b",
+    "fg": "#f4f4f4",
+    "fgMuted": "#a6a8ad",
+    "accent": "#7c5cff",
+    "accentFg": "#ffffff",
+    "border": "#2a2c33",
+    "danger": "#ef4444",
+    "success": "#4ade80"
+  },
+  "font": "'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
+  "radius": 14,
+  "transparency": 1,
+  "animations": true
+}

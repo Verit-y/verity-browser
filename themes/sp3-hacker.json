@@ -1,0 +1,21 @@
+{
+  "id": "sp3-hacker",
+  "name": "SP3 Hacker",
+  "author": "SP3 Project",
+  "dark": true,
+  "colors": {
+    "bg": "#050805",
+    "bgElevated": "#0a120a",
+    "fg": "#00ff66",
+    "fgMuted": "#1f9950",
+    "accent": "#00ff66",
+    "accentFg": "#021105",
+    "border": "#103d20",
+    "danger": "#ff3333",
+    "success": "#00ff66"
+  },
+  "font": "'Cascadia Code', 'Fira Code', Consolas, monospace",
+  "radius": 2,
+  "transparency": 1,
+  "animations": true
+}

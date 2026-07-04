@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>SP3 Branding-Vorschau</title>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; }
+    section { flex: 1; min-height: 100vh; display: flex; flex-direction: column;
+              align-items: center; justify-content: center; gap: 24px; }
+    .dark { background: #0a0b0d; color: #eee; }
+    .light { background: #f4f5f7; color: #222; }
+    img.icon { width: 256px; }
+    img.mark { height: 200px; }
+    h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; opacity: .6; }
+  </style>
+</head>
+<body>
+  <section class="dark">
+    <h2>App-Icon &amp; Marke (dunkel)</h2>
+    <img class="icon" src="icon.svg" alt="Icon" />
+    <img class="mark" src="logo-white.svg" alt="Logo hell" />
+  </section>
+  <section class="light">
+    <h2>Marke (hell)</h2>
+    <img class="icon" src="icon.svg" alt="Icon" style="width:128px" />
+    <img class="mark" src="logo.svg" alt="Logo dunkel" />
+  </section>
+</body>
+</html>

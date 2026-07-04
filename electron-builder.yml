@@ -1,0 +1,44 @@
+appId: org.sp3browser.app
+productName: SP3 Browser
+copyright: © 2026 SP3 Project (MIT)
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**
+  - themes/**
+  - package.json
+
+# Auto-Update via GitHub Releases (electron-updater liest diese Quelle).
+publish:
+  provider: github
+  owner: sp3-browser
+  repo: sp3-browser
+
+win:
+  target:
+    - nsis
+  # build/icon.ico erzeugen – siehe docs/BUILD.md (aus assets/icon.svg konvertieren)
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.productivity
+  hardenedRuntime: true
+
+linux:
+  target:
+    - AppImage
+    - deb
+    - tar.gz
+  category: Network
+  synopsis: Der anpassbarste Datenschutz-Browser der Welt.
+  desktop:
+    StartupWMClass: SP3 Browser

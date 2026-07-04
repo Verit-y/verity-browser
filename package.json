@@ -1,0 +1,33 @@
+{
+  "name": "sp3-browser",
+  "productName": "SP3 Browser",
+  "version": "0.1.0",
+  "description": "SP3 Browser – der anpassbarste Datenschutz-Browser der Welt. Privacy First. Security First. User Control First. Performance First.",
+  "license": "MIT",
+  "author": "SP3 Project",
+  "homepage": "https://sp3-browser.org",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron . --dev",
+    "smoke": "npm run build && electron . --smoke",
+    "icon": "electron scripts/make-icon.mjs",
+    "dist": "npm run build && npm run icon && electron-builder --publish never",
+    "dist:win": "npm run build && npm run icon && electron-builder --win --publish never",
+    "dist:linux": "npm run build && npm run icon && electron-builder --linux --publish never",
+    "dist:ubuntu": "npm run build && npm run icon && electron-builder --linux dir --publish never && node scripts/make-deb.mjs",
+    "dist:mac": "npm run build && npm run icon && electron-builder --mac --publish never"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3"
+  }
+}

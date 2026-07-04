@@ -1,0 +1,10 @@
+{
+  "id": "beispiel-statistik",
+  "name": "Beispiel: Block-Statistik",
+  "version": "1.0.0",
+  "description": "Zeigt erweiterte Statistiken zu blockierten Anfragen in einem eigenen Panel. Dient als Referenz für das SP3-Manifest-Format (Phase 1: wird erkannt und gelistet, noch nicht ausgeführt).",
+  "author": "SP3 Project",
+  "entry": "index.js",
+  "permissions": ["stats:read"],
+  "surfaces": ["panel"]
+}
