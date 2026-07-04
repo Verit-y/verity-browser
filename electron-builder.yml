@@ -1,6 +1,6 @@
-appId: org.sp3browser.app
-productName: SP3 Browser
-copyright: © 2026 SP3 Project (MIT)
+appId: com.verity.browser
+productName: Verity
+copyright: © 2026 Verity Project (MIT)
 
 directories:
   output: release
@@ -14,8 +14,8 @@ files:
 # Auto-Update via GitHub Releases (electron-updater liest diese Quelle).
 publish:
   provider: github
-  owner: sp3-browser
-  repo: sp3-browser
+  owner: Verit-y
+  repo: verity
 
 win:
   target:
@@ -34,6 +34,7 @@ mac:
   hardenedRuntime: true
 
 linux:
+  executableName: verity-browser
   target:
     - AppImage
     - deb
@@ -41,4 +42,4 @@ linux:
   category: Network
   synopsis: Der anpassbarste Datenschutz-Browser der Welt.
   desktop:
-    StartupWMClass: SP3 Browser
+    StartupWMClass: Verity

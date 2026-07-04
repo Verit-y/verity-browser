@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SP3 Browser – All-in-One-Setup für Ubuntu/Debian.
+# Verity – All-in-One-Setup für Ubuntu/Debian.
 #
 # Macht alles in einem Rutsch:
 #   1. installiert Node.js (>= 20) und benötigte System-Bibliotheken
@@ -35,7 +35,7 @@ done
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
-[ -f package.json ] || die "package.json nicht gefunden – bitte das Skript im SP3-Projektordner ausführen."
+[ -f package.json ] || die "package.json nicht gefunden – bitte das Skript im Verity-Projektordner ausführen."
 
 # sudo nur nutzen, wenn nicht bereits root.
 SUDO=""
@@ -91,7 +91,7 @@ npm run icon || warn "Icon-Erzeugung übersprungen (kein Display?) – Paket nut
 
 # ---- Modus: nur starten -----------------------------------------------------
 if [ "$MODE" = "run" ]; then
-  step "SP3 Browser startet …"
+  step "Verity startet …"
   exec npm start
 fi
 
@@ -101,7 +101,7 @@ npx --no-install electron-builder --linux dir --publish never \
   || npx electron-builder --linux dir --publish never
 node scripts/make-deb.mjs
 
-DEB="$(ls -1 release/sp3-browser_*_amd64.deb 2>/dev/null | head -n1)"
+DEB="$(ls -1 release/verity-browser_*_amd64.deb 2>/dev/null | head -n1)"
 [ -n "$DEB" ] || die "Kein .deb in release/ gefunden."
 info "Paket: $DEB"
 
@@ -112,9 +112,9 @@ if [ "$MODE" = "build" ]; then
 fi
 
 # ---- 5. Installieren --------------------------------------------------------
-step "SP3 Browser installieren"
+step "Verity installieren"
 $SUDO apt-get install -y "./$DEB" || { $SUDO dpkg -i "$DEB" || true; $SUDO apt-get -f install -y; }
 
-step "${G}Fertig!${X} SP3 Browser ist installiert."
-info "Starten:  über das App-Menü (\"SP3 Browser\") oder im Terminal:  sp3-browser"
-info "Falls der Start an der Sandbox scheitert:  sp3-browser --no-sandbox"
+step "${G}Fertig!${X} Verity ist installiert."
+info "Starten:  über das App-Menü (\"Verity\") oder im Terminal:  verity-browser"
+info "Falls der Start an der Sandbox scheitert:  verity-browser --no-sandbox"

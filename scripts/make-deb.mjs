@@ -14,7 +14,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const VERSION = pkg.version;
 const ARCH = 'amd64';
-const PRODUCT = 'SP3 Browser';
+const PRODUCT = 'Verity';
 const INSTALL_DIR = `opt/${PRODUCT}`;
 const unpacked = join(root, 'release', 'linux-unpacked');
 
@@ -101,7 +101,7 @@ function addDirChain(path) {
 function modeFor(rel) {
   const base = rel.split('/').pop();
   if (base === 'chrome-sandbox') return 0o4755;
-  if (base === 'sp3-browser' || base === 'chrome_crashpad_handler') return 0o755;
+  if (base === 'verity-browser' || base === 'chrome_crashpad_handler') return 0o755;
   return 0o644;
 }
 
@@ -129,27 +129,27 @@ addDirChain('usr/share/applications');
 addDirChain('usr/share/icons/hicolor/512x512/apps');
 
 fileEntries.push({
-  name: './usr/bin/sp3-browser',
+  name: './usr/bin/verity-browser',
   type: '2',
   mode: 0o777,
-  link: `/${INSTALL_DIR}/sp3-browser`,
+  link: `/${INSTALL_DIR}/verity-browser`,
 });
 
 const desktop = `[Desktop Entry]
-Name=SP3 Browser
+Name=Verity
 GenericName=Web Browser
 Comment=Der anpassbarste Datenschutz-Browser der Welt.
-Exec=sp3-browser %U
-Icon=sp3-browser
+Exec=verity-browser %U
+Icon=verity-browser
 Type=Application
 Terminal=false
 StartupNotify=true
-StartupWMClass=SP3 Browser
+StartupWMClass=Verity
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
 `;
 fileEntries.push({
-  name: './usr/share/applications/sp3-browser.desktop',
+  name: './usr/share/applications/verity-browser.desktop',
   type: '0',
   mode: 0o644,
   data: Buffer.from(desktop, 'utf8'),
@@ -157,7 +157,7 @@ fileEntries.push({
 const iconPath = join(root, 'build', 'icon.png');
 if (existsSync(iconPath)) {
   fileEntries.push({
-    name: './usr/share/icons/hicolor/512x512/apps/sp3-browser.png',
+    name: './usr/share/icons/hicolor/512x512/apps/verity-browser.png',
     type: '0',
     mode: 0o644,
     data: readFileSync(iconPath),
@@ -180,16 +180,16 @@ const dataTar = makeTarGz(dataEntries);
 let installedKb = 0;
 for (const e of fileEntries) if (e.data) installedKb += Math.ceil(e.data.length / 1024);
 
-const control = `Package: sp3-browser
+const control = `Package: verity-browser
 Version: ${VERSION}
 Architecture: ${ARCH}
-Maintainer: SP3 Project <noreply@sp3-browser.org>
+Maintainer: Verity Project <noreply@verity-browser.org>
 Installed-Size: ${installedKb}
 Section: net
 Priority: optional
-Homepage: https://sp3-browser.org
+Homepage: https://verity-browser.org
 Depends: libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libdrm2, libgbm1, libxcb-dri3-0, libsecret-1-0, libasound2 | libasound2t64
-Description: SP3 Browser - der anpassbarste Datenschutz-Browser der Welt.
+Description: Verity - der anpassbarste Datenschutz-Browser der Welt.
  Privacy First. Security First. User Control First. Performance First.
  Vertikale Tabs, Workspaces, integrierter Tracker-/Malware-Schutz und ein
  vollstaendig anpassbares, Zen-inspiriertes UI.
@@ -235,6 +235,6 @@ const deb = Buffer.concat([
   arMember('data.tar.gz', dataTar),
 ]);
 
-const outFile = join(root, 'release', `sp3-browser_${VERSION}_${ARCH}.deb`);
+const outFile = join(root, 'release', `verity-browser_${VERSION}_${ARCH}.deb`);
 writeFileSync(outFile, deb);
 console.log(`DEB_OK ${outFile} (${(deb.length / 1024 / 1024).toFixed(1)} MB, Installed-Size ${installedKb} KB)`);

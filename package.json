@@ -1,11 +1,11 @@
 {
-  "name": "sp3-browser",
-  "productName": "SP3 Browser",
+  "name": "verity-browser",
+  "productName": "Verity",
   "version": "0.1.0",
-  "description": "SP3 Browser – der anpassbarste Datenschutz-Browser der Welt. Privacy First. Security First. User Control First. Performance First.",
+  "description": "Verity – der anpassbarste Datenschutz-Browser der Welt. Privacy First. Security First. User Control First. Performance First.",
   "license": "MIT",
-  "author": "SP3 Project",
-  "homepage": "https://sp3-browser.org",
+  "author": "Verity Project",
+  "homepage": "https://github.com/Verit-y/verity",
   "main": "dist/main.js",
   "scripts": {
     "build": "node build.mjs",

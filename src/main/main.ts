@@ -38,7 +38,7 @@ function createMainWindow(): BrowserWindow {
     minHeight: 480,
     show: false,
     backgroundColor: '#121317',
-    title: 'SP3 Browser',
+    title: 'Verity',
     autoHideMenuBar: true,
     // Eigene Titelleiste: rahmenlos, Fensterknöpfe als thembares Overlay.
     titleBarStyle: 'hidden',
@@ -94,9 +94,9 @@ app.whenReady().then(() => {
           if (pageShot) writeFileSync(join(__dirname, 'smoke-page.png'), pageShot);
         }
       } catch (err) {
-        console.error('[sp3] smoke capture failed:', err);
+        console.error('[verity] smoke capture failed:', err);
       }
-      console.log('SP3_SMOKE_OK');
+      console.log('VERITY_SMOKE_OK');
       app.exit(0);
     }, 5000);
   } else {

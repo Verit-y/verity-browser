@@ -1,4 +1,4 @@
-// SP3 Browser build script: bundles main, preload and renderer with esbuild
+// Verity build script: bundles main, preload and renderer with esbuild
 // and copies static assets into dist/.
 import { build } from 'esbuild';
 import { cpSync, mkdirSync } from 'node:fs';
@@ -51,4 +51,4 @@ cpSync(join(root, 'src/renderer/styles.css'), join(dist, 'renderer/styles.css'))
 cpSync(join(root, 'src/renderer/warning.html'), join(dist, 'renderer/warning.html'));
 cpSync(join(root, 'src/renderer/start.html'), join(dist, 'renderer/start.html'));
 
-console.log('SP3 build complete.');
+console.log('Verity build complete.');

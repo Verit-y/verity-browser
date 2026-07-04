@@ -8,7 +8,7 @@ import { attachRequestFilter } from './requestFilter';
 const hardened = new WeakSet<Session>();
 
 /**
- * Applies the full SP3 hardening profile to a session exactly once:
+ * Applies the full Verity hardening profile to a session exactly once:
  * reduced user agent, request filter (adblock/tracker/HTTPS-only/GPC) and
  * deny-by-default permissions. Called for every container partition, so
  * temporary containers and private tabs get the same protections.

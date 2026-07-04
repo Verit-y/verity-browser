@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:;" />
-  <title>SP3 Shield – Seite blockiert</title>
+  <title>Verity Shield – Seite blockiert</title>
   <style>
     * { margin: 0; box-sizing: border-box; }
     body {
@@ -50,7 +50,7 @@
   <div class="card">
     <div class="badge">
       <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z"/><path d="M12 9v4m0 3h.01"/></svg>
-      SP3 Shield
+      Verity Shield
     </div>
     <h1 id="threat-type">Seite blockiert</h1>
     <div class="url" id="threat-url"></div>
@@ -75,7 +75,7 @@
       // Intercepted by the main process (will-navigate) - whitelists the
       // host for this session and performs the real navigation.
       document.getElementById('btn-proceed').href =
-        'https://proceed.sp3.invalid/?u=' + encodeURIComponent(url);
+        'https://proceed.verity.invalid/?u=' + encodeURIComponent(url);
     })();
   </script>
 </body>

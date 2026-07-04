@@ -21,6 +21,6 @@ export function applyDoH(settings: SettingsData): void {
       secureDnsServers: settings.doh.enabled ? [settings.doh.server] : [],
     });
   } catch (err) {
-    console.error('[sp3] DoH configuration failed:', err);
+    console.error('[verity] DoH configuration failed:', err);
   }
 }

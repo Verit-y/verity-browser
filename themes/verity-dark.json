@@ -1,7 +1,7 @@
 {
-  "id": "sp3-dark",
-  "name": "SP3 Dark",
-  "author": "SP3 Project",
+  "id": "verity-dark",
+  "name": "Verity Dark",
+  "author": "Verity Project",
   "dark": true,
   "colors": {
     "bg": "#17181c",

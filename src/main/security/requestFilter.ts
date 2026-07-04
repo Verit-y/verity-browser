@@ -44,7 +44,7 @@ export function attachRequestFilter(
         return;
       }
 
-      // SP3 Shield: block known-bad / phishing navigations with a warning
+      // Verity Shield: block known-bad / phishing navigations with a warning
       // page (loaded by the TabManager via the stats 'threat' event).
       if (s.threatProtection && details.resourceType === 'mainFrame') {
         const threat = checkThreat(url);

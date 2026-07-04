@@ -11,9 +11,9 @@ export function initUpdater(): void {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { autoUpdater } = require('electron-updater');
     autoUpdater.checkForUpdatesAndNotify().catch((err: unknown) => {
-      console.error('[sp3] update check failed:', err);
+      console.error('[verity] update check failed:', err);
     });
   } catch (err) {
-    console.error('[sp3] electron-updater not available:', err);
+    console.error('[verity] electron-updater not available:', err);
   }
 }

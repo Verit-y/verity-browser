@@ -2,7 +2,7 @@ import { WebContents } from 'electron';
 
 /**
  * Generic, reduced user agent: hides the Electron token and patch-level
- * version details so SP3 blends in with regular Chrome installs.
+ * version details so Verity blends in with regular Chrome installs.
  */
 export function genericUserAgent(): string {
   const chromeMajor = (process.versions.chrome ?? '124.0.0.0').split('.')[0];
@@ -23,7 +23,7 @@ export function genericUserAgent(): string {
  * Limits are documented in docs/SECURITY.md.
  */
 const FP_SCRIPT = `(() => {
-  if (window.__sp3fp) return; window.__sp3fp = true;
+  if (window.__verityfp) return; window.__verityfp = true;
   const addNoise = (canvas) => {
     try {
       const ctx = canvas.getContext && canvas.getContext('2d');

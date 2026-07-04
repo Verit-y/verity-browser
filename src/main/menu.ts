@@ -8,7 +8,7 @@ import { TabManager } from './tabs';
 export function buildMenu(win: BrowserWindow, tabs: TabManager): void {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
-      label: 'SP3',
+      label: 'Verity',
       submenu: [
         {
           label: 'Neuer Tab',

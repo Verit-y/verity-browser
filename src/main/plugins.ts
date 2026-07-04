@@ -7,7 +7,7 @@ import { PluginInfo } from '../shared/types';
  * Plugin discovery (Phase 1 of the plugin architecture, see docs/PLUGINS.md).
  * Plugins live in <userData>/plugins/<id>/manifest.json. This phase only
  * validates and lists manifests - sandboxed execution of plugin code is a
- * deliberate roadmap item: SP3 will not run third-party code in the main
+ * deliberate roadmap item: Verity will not run third-party code in the main
  * process.
  */
 export function listPlugins(): PluginInfo[] {
@@ -31,7 +31,7 @@ export function listPlugins(): PluginInfo[] {
         });
       }
     } catch (err) {
-      console.error(`[sp3] invalid plugin manifest in ${entry.name}:`, err);
+      console.error(`[verity] invalid plugin manifest in ${entry.name}:`, err);
     }
   }
   return plugins;

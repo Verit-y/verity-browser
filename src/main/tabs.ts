@@ -11,10 +11,10 @@ import { allowHost, Threat, THREAT_LABELS } from './security/threats';
 
 // Navigations to this pseudo host (link on the warning page) mean
 // "proceed despite the warning". The .invalid TLD can never resolve.
-const PROCEED_PREFIX = 'https://proceed.sp3.invalid/?u=';
+const PROCEED_PREFIX = 'https://proceed.verity.invalid/?u=';
 
-/** Interne SP3-Startseite (statt einer fremden Homepage). */
-export const START_URL = 'sp3://start';
+/** Interne Verity-Startseite (statt einer fremden Homepage). */
+export const START_URL = 'verity://start';
 
 let nextTabId = 1;
 
@@ -68,7 +68,7 @@ export class TabManager {
     });
   }
 
-  /** Replaces the blocked navigation with the local SP3 warning page. */
+  /** Replaces the blocked navigation with the local Verity warning page. */
   private showWarning(tab: Tab, url: string, threat: Threat): void {
     const params = new URLSearchParams({
       u: url,
@@ -156,7 +156,7 @@ export class TabManager {
     return tab.id;
   }
 
-  /** Resolves internal URLs (sp3://start) and loads everything else as-is. */
+  /** Resolves internal URLs (verity://start) and loads everything else as-is. */
   private load(wc: Electron.WebContents, url: string): void {
     if (url === START_URL || url === '') {
       const s = this.settings.get();
@@ -272,7 +272,7 @@ export class TabManager {
     const image = await tab.view.webContents.capturePage();
     const dir = join(app.getPath('userData'), 'screenshots');
     mkdirSync(dir, { recursive: true });
-    const file = join(dir, `sp3-${new Date().toISOString().replace(/[:.]/g, '-')}.png`);
+    const file = join(dir, `verity-${new Date().toISOString().replace(/[:.]/g, '-')}.png`);
     writeFileSync(file, image.toPNG());
     shell.showItemInFolder(file);
     return file;

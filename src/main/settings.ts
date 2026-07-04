@@ -27,9 +27,16 @@ export class SettingsStore extends EventEmitter {
         if (this.data.homepage === 'https://duckduckgo.com') {
           this.data.homepage = DEFAULT_SETTINGS.homepage;
         }
+        // Migration SP3 -> Verity: internes Protokoll und Theme-IDs umbenennen.
+        if (this.data.homepage === 'sp3://start') {
+          this.data.homepage = DEFAULT_SETTINGS.homepage;
+        }
+        if (typeof this.data.theme === 'string' && this.data.theme.startsWith('sp3-')) {
+          this.data.theme = this.data.theme.replace(/^sp3-/, 'verity-');
+        }
       }
     } catch (err) {
-      console.error('[sp3] settings load failed, using defaults:', err);
+      console.error('[verity] settings load failed, using defaults:', err);
     }
   }
 
@@ -55,7 +62,7 @@ export class SettingsStore extends EventEmitter {
       mkdirSync(dirname(this.file), { recursive: true });
       writeFileSync(this.file, JSON.stringify(this.data, null, 2), 'utf8');
     } catch (err) {
-      console.error('[sp3] settings save failed:', err);
+      console.error('[verity] settings save failed:', err);
     }
   }
 }

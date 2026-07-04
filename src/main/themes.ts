@@ -19,7 +19,7 @@ function readThemesFrom(dir: string): ThemeSpec[] {
       const spec = JSON.parse(readFileSync(join(dir, file), 'utf8')) as ThemeSpec;
       if (spec.id && spec.name && spec.colors) themes.push(spec);
     } catch (err) {
-      console.error(`[sp3] invalid theme ${file}:`, err);
+      console.error(`[verity] invalid theme ${file}:`, err);
     }
   }
   return themes;

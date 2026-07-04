@@ -28,7 +28,7 @@ export class Vault {
         this.entries = JSON.parse(readFileSync(this.file, 'utf8')).entries ?? [];
       }
     } catch (err) {
-      console.error('[sp3] vault load failed:', err);
+      console.error('[verity] vault load failed:', err);
     }
   }
 

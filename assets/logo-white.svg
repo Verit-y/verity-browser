@@ -1,35 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="140 80 240 380" width="240" height="380">
-  <!-- SP3 Browser Logo (hell, für dunkle Hintergründe): Fuchs-P-Marke -->
-  <defs>
-    <linearGradient id="pband-w" x1="250" y1="120" x2="430" y2="400" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#f4f6f8"/>
-      <stop offset="45%" stop-color="#aab2bb"/>
-      <stop offset="100%" stop-color="#5c636c"/>
-    </linearGradient>
-    <linearGradient id="foxfill-w" x1="240" y1="100" x2="300" y2="440" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="55%" stop-color="#dde2e8"/>
-      <stop offset="100%" stop-color="#7a828c"/>
-    </linearGradient>
-  </defs>
-  <path d="M306 148 H336 A104 104 0 0 1 336 356 H286" fill="none"
-        stroke="url(#pband-w)" stroke-width="54" stroke-linecap="round"/>
-  <path d="M206 104
-           C220 122 232 138 240 152
-           C246 142 252 128 262 116
-           C268 134 270 148 268 160
-           C292 168 312 184 322 206
-           C330 214 332 222 326 230
-           C310 238 290 240 272 238
-           C260 256 256 280 264 308
-           C274 348 288 392 298 434
-           C282 424 266 404 254 378
-           C234 338 214 282 204 226
-           C198 190 198 144 206 104 Z"
-        fill="url(#foxfill-w)" stroke="#ffffff" stroke-opacity="0.55" stroke-width="2"/>
-  <path d="M268 252
-           C260 296 268 352 288 404
-           C282 354 278 300 282 254
-           C278 252 272 251 268 252 Z"
-        fill="#101216" fill-opacity="0.85"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" width="320" height="120">
+  <!-- PLACEHOLDER Verity Wortmarke (hell, für dunkle Hintergründe).
+       Durch finales Branding ersetzen. -->
+  <path d="M20 32 L44 88 L68 32" fill="none" stroke="#eef2f8"
+        stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="84" y="78" font-family="Inter, system-ui, sans-serif" font-size="56"
+        font-weight="600" fill="#eef2f8">Verity</text>
 </svg>

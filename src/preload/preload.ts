@@ -76,6 +76,6 @@ const api = {
   },
 };
 
-export type Sp3Api = typeof api;
+export type VerityApi = typeof api;
 
-contextBridge.exposeInMainWorld('sp3', api);
+contextBridge.exposeInMainWorld('verity', api);

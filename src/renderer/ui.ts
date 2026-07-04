@@ -5,9 +5,9 @@ import {
   TabState,
   ThemeSpec,
 } from '../shared/types';
-import type { Sp3Api } from '../preload/preload';
+import type { VerityApi } from '../preload/preload';
 
-const sp3 = (window as unknown as { sp3: Sp3Api }).sp3;
+const verity = (window as unknown as { verity: VerityApi }).verity;
 
 // ---------------------------------------------------------------------------
 // State
@@ -80,7 +80,7 @@ function applyTheme(theme: ThemeSpec): void {
   root.setProperty('--anim', theme.animations === false ? '0ms' : '160ms');
   document.body.classList.toggle('no-anim', theme.animations === false);
   // Fensterknöpfe (Window Controls Overlay) ans Theme anpassen.
-  sp3.chrome.setTitlebar({
+  verity.chrome.setTitlebar({
     color: theme.colors.bg,
     symbolColor: theme.colors.fgMuted,
   });
@@ -125,7 +125,7 @@ function sendInsets(): void {
   frame.style.top = `${top}px`;
   frame.style.right = `${GAP}px`;
   frame.style.bottom = `${GAP}px`;
-  sp3.chrome.setInsets({ top, left });
+  verity.chrome.setInsets({ top, left });
 }
 
 // ---------------------------------------------------------------------------
@@ -166,13 +166,13 @@ function renderTabs(): void {
       (tab.blockedCount > 0 ? `<span class="tab-badge">${tab.blockedCount}</span>` : '') +
       `<button class="tab-close" title="Tab schließen">×</button>`;
 
-    el.addEventListener('click', () => sp3.tabs.activate(tab.id));
+    el.addEventListener('click', () => verity.tabs.activate(tab.id));
     el.addEventListener('auxclick', (e) => {
-      if (e.button === 1) sp3.tabs.close(tab.id);
+      if (e.button === 1) verity.tabs.close(tab.id);
     });
     el.querySelector('.tab-close')!.addEventListener('click', (e) => {
       e.stopPropagation();
-      sp3.tabs.close(tab.id);
+      verity.tabs.close(tab.id);
     });
     strip.appendChild(el);
   }
@@ -181,7 +181,7 @@ function renderTabs(): void {
 function syncAddress(): void {
   const tab = activeTab();
   if (!tab) return;
-  document.title = `${tab.title} – SP3 Browser`;
+  document.title = `${tab.title} – Verity`;
   const input = addressInput();
   if (document.activeElement !== input) {
     input.value = tab.url === 'about:blank' ? '' : tab.url;
@@ -223,7 +223,7 @@ function openPanel(name: typeof openPanelName): void {
   openPanelName = name;
   const panel = $('#panel');
   panel.hidden = !name;
-  sp3.chrome.panelOpen(!!name);
+  verity.chrome.panelOpen(!!name);
   if (name) {
     $('#panel-title').textContent = PANEL_TITLES[name];
     void renderPanel();
@@ -267,7 +267,7 @@ const SECURITY_TOGGLES: ToggleDef[] = [
   { key: 'httpsOnly', label: 'HTTPS-Only-Modus', hint: 'Erzwingt verschlüsselte Verbindungen.' },
   { key: 'fingerprintProtection', label: 'Anti-Fingerprinting', hint: 'Canvas-Schutz & generischer User-Agent (für neue Tabs).' },
   { key: 'webrtcProtection', label: 'WebRTC-Leak-Schutz', hint: 'Verhindert IP-Leaks über WebRTC (für neue Tabs).' },
-  { key: 'threatProtection', label: 'Malware- & Phishing-Schutz', hint: 'SP3 Shield: blockiert Schadseiten und Marken-Imitationen mit Warnseite.' },
+  { key: 'threatProtection', label: 'Malware- & Phishing-Schutz', hint: 'Verity Shield: blockiert Schadseiten und Marken-Imitationen mit Warnseite.' },
   { key: 'clearCookiesOnExit', label: 'Cookies beim Beenden löschen', hint: 'Automatisches Aufräumen beim Schließen.' },
 ];
 
@@ -359,47 +359,47 @@ function renderSettingsPanel(body: HTMLElement): void {
 
   for (const el of body.querySelectorAll<HTMLInputElement>('[data-toggle]')) {
     el.addEventListener('change', async () => {
-      settings = await sp3.settings.update({ [el.dataset.toggle!]: el.checked });
+      settings = await verity.settings.update({ [el.dataset.toggle!]: el.checked });
     });
   }
   body.querySelector<HTMLInputElement>('[data-toggle-doh]')!.addEventListener('change', async (e) => {
     const checked = (e.target as HTMLInputElement).checked;
-    settings = await sp3.settings.update({ doh: { ...settings.doh, enabled: checked } });
+    settings = await verity.settings.update({ doh: { ...settings.doh, enabled: checked } });
   });
   body.querySelector<HTMLSelectElement>('[data-doh-server]')!.addEventListener('change', async (e) => {
-    settings = await sp3.settings.update({
+    settings = await verity.settings.update({
       doh: { ...settings.doh, server: (e.target as HTMLSelectElement).value },
     });
   });
   body.querySelector<HTMLSelectElement>('[data-engine]')!.addEventListener('change', async (e) => {
-    settings = await sp3.settings.update({
+    settings = await verity.settings.update({
       searchEngine: (e.target as HTMLSelectElement).value as SettingsData['searchEngine'],
     });
   });
   body.querySelector<HTMLInputElement>('[data-homepage]')!.addEventListener('change', async (e) => {
-    settings = await sp3.settings.update({ homepage: (e.target as HTMLInputElement).value });
+    settings = await verity.settings.update({ homepage: (e.target as HTMLInputElement).value });
   });
   body.querySelector<HTMLSelectElement>('[data-layout]')!.addEventListener('change', async (e) => {
-    settings = await sp3.settings.update({
+    settings = await verity.settings.update({
       layout: (e.target as HTMLSelectElement).value as SettingsData['layout'],
     });
     applyLayout();
   });
   body.querySelector('[data-toggle-scripts]')!.addEventListener('click', () => {
-    sp3.tabs.toggleScripts(null);
+    verity.tabs.toggleScripts(null);
     openPanel(null);
   });
   body.querySelector<HTMLInputElement>('[data-ai-enabled]')!.addEventListener('change', async (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
-    settings = await sp3.settings.update({ ai: { ...settings.ai, enabled } });
+    settings = await verity.settings.update({ ai: { ...settings.ai, enabled } });
   });
   body.querySelector<HTMLInputElement>('[data-ai-model]')!.addEventListener('change', async (e) => {
     const model = (e.target as HTMLInputElement).value.trim();
-    if (model) settings = await sp3.settings.update({ ai: { ...settings.ai, model } });
+    if (model) settings = await verity.settings.update({ ai: { ...settings.ai, model } });
   });
   body.querySelector<HTMLInputElement>('[data-ai-endpoint]')!.addEventListener('change', async (e) => {
     const endpoint = (e.target as HTMLInputElement).value.trim();
-    if (endpoint) settings = await sp3.settings.update({ ai: { ...settings.ai, endpoint } });
+    if (endpoint) settings = await verity.settings.update({ ai: { ...settings.ai, endpoint } });
   });
 }
 
@@ -478,7 +478,7 @@ function renderThemesPanel(body: HTMLElement): void {
   for (const card of body.querySelectorAll<HTMLElement>('[data-theme]')) {
     card.addEventListener('click', async () => {
       const id = card.dataset.theme!;
-      settings = await sp3.settings.update({ theme: id });
+      settings = await verity.settings.update({ theme: id });
       themeDraft = null;
       applyThemeById(id);
       renderThemesPanel(body);
@@ -509,9 +509,9 @@ function renderThemesPanel(body: HTMLElement): void {
   });
 
   body.querySelector('[data-save]')!.addEventListener('click', async () => {
-    const saved = await sp3.themes.save(draft);
-    themes = await sp3.themes.list();
-    settings = await sp3.settings.update({ theme: saved.id });
+    const saved = await verity.themes.save(draft);
+    themes = await verity.themes.list();
+    settings = await verity.settings.update({ theme: saved.id });
     themeDraft = null;
     applyThemeById(saved.id);
     renderThemesPanel(body);
@@ -522,7 +522,7 @@ function renderThemesPanel(body: HTMLElement): void {
     const blob = new Blob([JSON.stringify(draft, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${draft.id}.sp3-theme.json`;
+    a.download = `${draft.id}.verity-theme.json`;
     a.click();
     URL.revokeObjectURL(a.href);
   });
@@ -535,12 +535,12 @@ function renderThemesPanel(body: HTMLElement): void {
     try {
       const spec = JSON.parse(await file.text()) as ThemeSpec;
       if (!spec.id || !spec.colors) throw new Error('Ungültiges Theme-Format');
-      await sp3.themes.save(spec);
-      themes = await sp3.themes.list();
+      await verity.themes.save(spec);
+      themes = await verity.themes.list();
       toast(`Theme „${spec.name}" importiert.`);
       renderThemesPanel(body);
     } catch {
-      toast('Import fehlgeschlagen: keine gültige SP3-Theme-Datei.');
+      toast('Import fehlgeschlagen: keine gültige Verity-Theme-Datei.');
     }
   });
 }
@@ -603,14 +603,14 @@ function renderDashboardPanel(body: HTMLElement): void {
 // --- Vault panel ----------------------------------------------------------------
 
 async function renderVaultPanel(body: HTMLElement): Promise<void> {
-  const status = await sp3.vault.status();
+  const status = await verity.vault.status();
   if (!status.available) {
     body.innerHTML = `<p style="color:var(--fg-muted)">
       Der verschlüsselte Tresor ist auf diesem System nicht verfügbar
       (Betriebssystem-Schlüsselbund nicht erreichbar).</p>`;
     return;
   }
-  const entries = await sp3.vault.list();
+  const entries = await verity.vault.list();
 
   body.innerHTML = `
     <div class="section">
@@ -654,7 +654,7 @@ async function renderVaultPanel(body: HTMLElement): Promise<void> {
   }
   for (const btn of body.querySelectorAll<HTMLButtonElement>('[data-del]')) {
     btn.addEventListener('click', async () => {
-      await sp3.vault.remove(btn.dataset.del!);
+      await verity.vault.remove(btn.dataset.del!);
       await renderVaultPanel(body);
     });
   }
@@ -666,7 +666,7 @@ async function renderVaultPanel(body: HTMLElement): Promise<void> {
       toast('Seite und Passwort sind erforderlich.');
       return;
     }
-    await sp3.vault.add({ site, username, password });
+    await verity.vault.add({ site, username, password });
     toast('Eintrag verschlüsselt gespeichert.');
     await renderVaultPanel(body);
   });
@@ -676,7 +676,7 @@ async function renderVaultPanel(body: HTMLElement): Promise<void> {
 
 async function renderAiPanel(body: HTMLElement): Promise<void> {
   body.innerHTML = `<p style="color:var(--fg-muted);font-size:13px">Prüfe lokalen KI-Status…</p>`;
-  const status = await sp3.ai.status();
+  const status = await verity.ai.status();
   if (openPanelName !== 'ai') return;
 
   if (!status.enabled) {
@@ -693,7 +693,7 @@ async function renderAiPanel(body: HTMLElement): Promise<void> {
         </div>
       </div>`;
     body.querySelector('[data-ai-on]')!.addEventListener('click', async () => {
-      settings = await sp3.settings.update({ ai: { ...settings.ai, enabled: true } });
+      settings = await verity.settings.update({ ai: { ...settings.ai, enabled: true } });
       await renderAiPanel(body);
     });
     return;
@@ -736,7 +736,7 @@ async function renderAiPanel(body: HTMLElement): Promise<void> {
 
   body.querySelector<HTMLSelectElement>('[data-ai-model-sel]')!.addEventListener('change', async (e) => {
     const model = (e.target as HTMLSelectElement).value;
-    settings = await sp3.settings.update({ ai: { ...settings.ai, model } });
+    settings = await verity.settings.update({ ai: { ...settings.ai, model } });
   });
 
   const out = body.querySelector<HTMLElement>('[data-ai-out]')!;
@@ -745,7 +745,7 @@ async function renderAiPanel(body: HTMLElement): Promise<void> {
     btn.addEventListener('click', async () => {
       buttons.forEach((b) => (b.disabled = true));
       out.textContent = 'Lokale KI denkt nach… (je nach Modell einige Sekunden)';
-      const result = await sp3.ai.run(btn.dataset.aiRun as 'summary' | 'security' | 'privacy');
+      const result = await verity.ai.run(btn.dataset.aiRun as 'summary' | 'security' | 'privacy');
       out.textContent = result.text;
       buttons.forEach((b) => (b.disabled = false));
     });
@@ -757,22 +757,22 @@ async function renderAiPanel(body: HTMLElement): Promise<void> {
 // ---------------------------------------------------------------------------
 
 function bindChrome(): void {
-  $('#btn-back').addEventListener('click', () => sp3.tabs.back(null));
-  $('#btn-forward').addEventListener('click', () => sp3.tabs.forward(null));
-  $('#btn-reload').addEventListener('click', () => sp3.tabs.reload(null));
-  $('#btn-newtab').addEventListener('click', () => sp3.tabs.create());
+  $('#btn-back').addEventListener('click', () => verity.tabs.back(null));
+  $('#btn-forward').addEventListener('click', () => verity.tabs.forward(null));
+  $('#btn-reload').addEventListener('click', () => verity.tabs.reload(null));
+  $('#btn-newtab').addEventListener('click', () => verity.tabs.create());
 
   $('#addressform').addEventListener('submit', (e) => {
     e.preventDefault();
     const url = resolveInput(addressInput().value);
-    sp3.tabs.navigate(null, url);
+    verity.tabs.navigate(null, url);
     addressInput().blur();
   });
 
-  $('#btn-split').addEventListener('click', () => sp3.tabs.toggleSplit());
+  $('#btn-split').addEventListener('click', () => verity.tabs.toggleSplit());
   $('#btn-sidebar').addEventListener('click', toggleCompact);
   $('#btn-screenshot').addEventListener('click', async () => {
-    const path = await sp3.tools.screenshot();
+    const path = await verity.tools.screenshot();
     toast(path ? 'Screenshot gespeichert.' : 'Screenshot fehlgeschlagen.');
   });
   $('#btn-ai').addEventListener('click', () => openPanel('ai'));
@@ -846,7 +846,7 @@ function renderPinned(): void {
     btn.title = p.url.replace(/^https?:\/\/(www\.)?/, '');
     btn.textContent = p.label;
     btn.style.setProperty('--pin-h', String(hueFor(p.url)));
-    btn.addEventListener('click', () => sp3.tabs.create(p.url));
+    btn.addEventListener('click', () => verity.tabs.create(p.url));
     host.appendChild(btn);
   }
 }
@@ -861,7 +861,7 @@ function openCmd(): void {
   cmdOpen = true;
   cmdSel = 0;
   $('#cmd').hidden = false;
-  sp3.chrome.panelOpen(true);
+  verity.chrome.panelOpen(true);
   const input = $<HTMLInputElement>('#cmd-input');
   input.value = '';
   renderCmd();
@@ -872,7 +872,7 @@ function closeCmd(): void {
   if (!cmdOpen) return;
   cmdOpen = false;
   $('#cmd').hidden = true;
-  if (!openPanelName) sp3.chrome.panelOpen(false);
+  if (!openPanelName) verity.chrome.panelOpen(false);
 }
 
 interface CmdItem {
@@ -889,7 +889,7 @@ function cmdItems(query: string): CmdItem[] {
     items.push({
       title: tab.title || 'Neuer Tab',
       sub: tab.url.replace(/^https?:\/\/(www\.)?/, '') || 'Startseite',
-      run: () => sp3.tabs.activate(tab.id),
+      run: () => verity.tabs.activate(tab.id),
     });
   }
   if (query.trim()) {
@@ -897,7 +897,7 @@ function cmdItems(query: string): CmdItem[] {
     items.unshift({
       title: looksUrl ? `Öffnen: ${query.trim()}` : `Suchen: ${query.trim()}`,
       sub: looksUrl ? 'Adresse aufrufen' : 'Im neuen Tab suchen',
-      run: () => sp3.tabs.create(resolveInput(query)),
+      run: () => verity.tabs.create(resolveInput(query)),
     });
   }
   return items.slice(0, 8);
@@ -945,25 +945,25 @@ function onCmdKey(e: KeyboardEvent): void {
 // ---------------------------------------------------------------------------
 
 async function init(): Promise<void> {
-  settings = await sp3.settings.get();
-  themes = await sp3.themes.list();
-  stats = await sp3.stats.get();
+  settings = await verity.settings.get();
+  themes = await verity.themes.list();
+  stats = await verity.stats.get();
   applyThemeById(settings.theme);
   applyLayout();
   renderPinned();
   bindChrome();
 
-  sp3.onTabs((t) => {
+  verity.onTabs((t) => {
     tabs = t;
     renderTabs();
     syncAddress();
   });
-  sp3.onStats((s) => {
+  verity.onStats((s) => {
     stats = s;
     updateShield();
     if (openPanelName === 'dashboard') void renderPanel();
   });
-  sp3.onFocusAddress(() => {
+  verity.onFocusAddress(() => {
     addressInput().focus();
     addressInput().select();
   });

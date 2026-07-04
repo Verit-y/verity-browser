@@ -1,4 +1,4 @@
-// SP3 Shield: Malware-, Phishing- und Scam-Schutz.
+// Verity Shield: Malware-, Phishing- und Scam-Schutz.
 //
 // Two layers, both conservative to avoid false positives:
 //  1. A curated list of known-bad hosts (suffix match). Production builds
@@ -19,11 +19,11 @@ export interface Threat {
   reason: string;
 }
 
-// Known-bad hosts. 'malware.sp3.test' is the built-in demo entry so the
+// Known-bad hosts. 'malware.verity.test' is the built-in demo entry so the
 // warning flow can be tested without visiting a real malicious site.
 const MALWARE_HOSTS = [
-  'malware.sp3.test',
-  'phishing.sp3.test',
+  'malware.verity.test',
+  'phishing.verity.test',
   'malware.testing.google.test',
   'testsafebrowsing.appspot.com',
 ];
@@ -96,7 +96,7 @@ export function checkThreat(url: URL): Threat | null {
     if (matchesSuffix(hostname, bad)) {
       return {
         type: 'malware',
-        reason: `Die Domain „${hostname}" steht auf der SP3-Liste bekannter Schadseiten.`,
+        reason: `Die Domain „${hostname}" steht auf der Verity-Liste bekannter Schadseiten.`,
       };
     }
   }

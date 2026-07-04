@@ -1,9 +1,9 @@
-/* SP3 Browser – Zen-inspiriertes UI-System.
+/* Verity – Zen-inspiriertes UI-System.
    Farben kommen aus dem aktiven Theme (von ui.ts gesetzt); Struktur,
    Abstände, Radien und Bewegungen sind hier als Tokens definiert. */
 
 :root {
-  /* Theme-Farben (Default = SP3 Dark / Zen-Palette) */
+  /* Theme-Farben (Default = Verity Dark / Zen-Palette) */
   --bg: #17181c;
   --bg-elevated: #23252b;
   --fg: #f4f4f4;

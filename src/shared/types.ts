@@ -104,7 +104,7 @@ export interface SettingsData {
   doh: DohConfig;
   fingerprintProtection: boolean;
   webrtcProtection: boolean;
-  /** Malware-/Phishing-/Scam-Schutz (SP3 Shield). */
+  /** Malware-/Phishing-/Scam-Schutz (Verity Shield). */
   threatProtection: boolean;
   clearCookiesOnExit: boolean;
   ai: AiConfig;
@@ -113,9 +113,9 @@ export interface SettingsData {
 }
 
 export const DEFAULT_SETTINGS: SettingsData = {
-  theme: 'sp3-dark',
+  theme: 'verity-dark',
   layout: 'vertical',
-  homepage: 'sp3://start',
+  homepage: 'verity://start',
   searchEngine: 'duckduckgo',
   adblock: true,
   trackerBlock: true,
