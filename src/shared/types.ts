@@ -93,6 +93,39 @@ export interface AiResult {
   text: string;
 }
 
+export type SidebarSide = 'left' | 'right';
+export type AccentMode = 'mono' | 'accent';
+
+/** Erscheinungsbild: granulare Transparenz, Glass, Layout-Feinschliff. */
+export interface AppearanceConfig {
+  /** UI-Deckkraft je Bereich (1 = vollständig opak, 0 = transparent). */
+  sidebarAlpha: number;
+  toolbarAlpha: number;
+  popupAlpha: number;
+  /** Backdrop-Blur-Stärke in px (unabhängig von der Deckkraft). */
+  blur: number;
+  /** Wenn true, steuern die Sidebar-Regler alle Bereiche gemeinsam. */
+  coupleAll: boolean;
+  /** Eckenradius der UI in px. */
+  cornerRadius: number;
+  sidebarSide: SidebarSide;
+  /** Dichtere Abstände. */
+  compact: boolean;
+  /** Monochrom (kein Farbakzent) oder Akzentfarbe. */
+  accentMode: AccentMode;
+  /** Überschreibt die Theme-Akzentfarbe im Akzent-Modus. */
+  accentColor: string;
+  /** Echte Fenstertransparenz (nur wenn Compositor verfügbar; Neustart nötig). */
+  nativeTransparency: boolean;
+}
+
+export interface AppearanceCapabilities {
+  /** Compositing/echte Fenstertransparenz verfügbar. */
+  compositing: boolean;
+  platform: NodeJS.Platform;
+  sessionType: string;
+}
+
 export interface SettingsData {
   theme: string;
   layout: Layout;
@@ -108,9 +141,24 @@ export interface SettingsData {
   threatProtection: boolean;
   clearCookiesOnExit: boolean;
   ai: AiConfig;
+  appearance: AppearanceConfig;
   /** origin -> list of allowed permission names */
   permissions: Record<string, string[]>;
 }
+
+export const DEFAULT_APPEARANCE: AppearanceConfig = {
+  sidebarAlpha: 1,
+  toolbarAlpha: 1,
+  popupAlpha: 0.9,
+  blur: 18,
+  coupleAll: true,
+  cornerRadius: 14,
+  sidebarSide: 'left',
+  compact: false,
+  accentMode: 'accent',
+  accentColor: '#7c5cff',
+  nativeTransparency: false,
+};
 
 export const DEFAULT_SETTINGS: SettingsData = {
   theme: 'verity-dark',
@@ -126,6 +174,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   threatProtection: true,
   clearCookiesOnExit: false,
   ai: { enabled: false, endpoint: 'http://127.0.0.1:11434', model: 'llama3.2' },
+  appearance: { ...DEFAULT_APPEARANCE },
   permissions: {},
 };
 

@@ -26,6 +26,7 @@ let stats: StatsPayload = {
 };
 let openPanelName: 'settings' | 'themes' | 'dashboard' | 'vault' | 'ai' | null = null;
 let themeDraft: ThemeSpec | null = null;
+let appearanceCaps: { compositing: boolean; sessionType: string } | null = null;
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string): T =>
   document.querySelector(sel) as T;
@@ -91,6 +92,26 @@ function applyThemeById(id: string): void {
   if (theme) applyTheme(theme);
 }
 
+/**
+ * Wendet das Erscheinungsbild (granulare Transparenz, Blur, Radius, Akzent,
+ * Compact, Sidebar-Seite) live an — über CSS-Variablen und Body-Klassen.
+ */
+function applyAppearance(): void {
+  const a = settings.appearance;
+  const root = document.documentElement.style;
+  const couple = a.coupleAll ? a.sidebarAlpha : null;
+  root.setProperty('--sidebar-alpha', String(a.sidebarAlpha));
+  root.setProperty('--toolbar-alpha', String(couple ?? a.toolbarAlpha));
+  root.setProperty('--popup-alpha', String(couple ?? a.popupAlpha));
+  root.setProperty('--ui-blur', `${a.blur}px`);
+  root.setProperty('--radius', `${a.cornerRadius}px`);
+  if (a.accentMode === 'accent') root.setProperty('--accent', a.accentColor);
+  document.body.classList.toggle('compact', a.compact);
+  document.body.classList.toggle('mono', a.accentMode === 'mono');
+  document.body.classList.toggle('sidebar-right', a.sidebarSide === 'right');
+  requestAnimationFrame(sendInsets);
+}
+
 // ---------------------------------------------------------------------------
 // Layout
 // ---------------------------------------------------------------------------
@@ -110,12 +131,20 @@ function applyLayout(): void {
  */
 function sendInsets(): void {
   const titlebar = $('#titlebar').offsetHeight;
+  const winW = document.documentElement.clientWidth;
   let top: number;
   let left: number;
+  let right = GAP;
+  const rightSidebar = settings.appearance?.sidebarSide === 'right';
   if (settings.layout === 'vertical') {
     const r = $('#chrome').getBoundingClientRect();
-    left = Math.round(r.right + GAP);
     top = Math.round(titlebar + GAP);
+    if (rightSidebar) {
+      left = GAP;
+      right = Math.round(winW - r.left + GAP);
+    } else {
+      left = Math.round(r.right + GAP);
+    }
   } else {
     left = GAP;
     top = Math.round(titlebar + $('#chrome').offsetHeight + GAP);
@@ -123,9 +152,9 @@ function sendInsets(): void {
   const frame = $('#card-frame');
   frame.style.left = `${left}px`;
   frame.style.top = `${top}px`;
-  frame.style.right = `${GAP}px`;
+  frame.style.right = `${right}px`;
   frame.style.bottom = `${GAP}px`;
-  verity.chrome.setInsets({ top, left });
+  verity.chrome.setInsets({ top, left, right });
 }
 
 // ---------------------------------------------------------------------------
@@ -327,6 +356,8 @@ function renderSettingsPanel(body: HTMLElement): void {
       </div>
     </div>
 
+    ${renderAppearanceSection(s)}
+
     <div class="section">
       <h3>Lokaler KI-Assistent (optional)</h3>
       <div class="row">
@@ -400,6 +431,126 @@ function renderSettingsPanel(body: HTMLElement): void {
   body.querySelector<HTMLInputElement>('[data-ai-endpoint]')!.addEventListener('change', async (e) => {
     const endpoint = (e.target as HTMLInputElement).value.trim();
     if (endpoint) settings = await verity.settings.update({ ai: { ...settings.ai, endpoint } });
+  });
+  bindAppearance(body);
+}
+
+// --- Erscheinungsbild / Transparenz -----------------------------------------
+
+function renderAppearanceSection(s: SettingsData): string {
+  const a = s.appearance;
+  const pct = (v: number) => Math.round(v * 100);
+  const warn =
+    a.nativeTransparency && appearanceCaps && !appearanceCaps.compositing
+      ? `<div class="banner-warn">⚠ Echte Fenstertransparenz ist auf diesem System vermutlich nicht verfügbar
+           (kein Compositor erkannt${appearanceCaps.sessionType ? `, Session: ${escapeHtml(appearanceCaps.sessionType)}` : ''}).
+           Der simulierte Glass-Effekt (UI-Ebenen) funktioniert trotzdem.</div>`
+      : '';
+  return `
+    <div class="section">
+      <h3>Erscheinungsbild &amp; Transparenz</h3>
+      ${warn}
+      <div class="row">
+        <label>Alles koppeln<span class="hint">Ein Regler steuert Sidebar, Toolbar und Popups gemeinsam.</span></label>
+        <input type="checkbox" data-app-couple ${a.coupleAll ? 'checked' : ''} />
+      </div>
+      <div class="row">
+        <label>Sidebar-Deckkraft<span class="hint" data-app-out="sidebar">${pct(a.sidebarAlpha)} %</span></label>
+        <input type="range" min="0" max="100" value="${pct(a.sidebarAlpha)}" data-app-alpha="sidebarAlpha" />
+      </div>
+      <div class="row" ${a.coupleAll ? 'hidden' : ''} data-app-uncoupled>
+        <label>Toolbar-Deckkraft<span class="hint" data-app-out="toolbar">${pct(a.toolbarAlpha)} %</span></label>
+        <input type="range" min="0" max="100" value="${pct(a.toolbarAlpha)}" data-app-alpha="toolbarAlpha" />
+      </div>
+      <div class="row" ${a.coupleAll ? 'hidden' : ''} data-app-uncoupled>
+        <label>Popup-Deckkraft<span class="hint" data-app-out="popup">${pct(a.popupAlpha)} %</span></label>
+        <input type="range" min="0" max="100" value="${pct(a.popupAlpha)}" data-app-alpha="popupAlpha" />
+      </div>
+      <div class="row">
+        <label>Blur-Intensität<span class="hint" data-app-out="blur">${a.blur} px</span></label>
+        <input type="range" min="0" max="60" value="${a.blur}" data-app-blur />
+      </div>
+      <div class="row">
+        <label>Eckenradius<span class="hint" data-app-out="radius">${a.cornerRadius} px</span></label>
+        <input type="range" min="0" max="28" value="${a.cornerRadius}" data-app-radius />
+      </div>
+      <div class="row">
+        <label>Sidebar-Position</label>
+        <select data-app-side>
+          <option value="left" ${a.sidebarSide === 'left' ? 'selected' : ''}>Links</option>
+          <option value="right" ${a.sidebarSide === 'right' ? 'selected' : ''}>Rechts</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Kompaktmodus<span class="hint">Dichtere Abstände.</span></label>
+        <input type="checkbox" data-app-compact ${a.compact ? 'checked' : ''} />
+      </div>
+      <div class="row">
+        <label>Akzent-Modus</label>
+        <select data-app-accentmode>
+          <option value="accent" ${a.accentMode === 'accent' ? 'selected' : ''}>Akzentfarbe</option>
+          <option value="mono" ${a.accentMode === 'mono' ? 'selected' : ''}>Monochrom</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Akzentfarbe</label>
+        <input type="color" data-app-accentcolor value="${escapeHtml(a.accentColor)}" />
+      </div>
+      <div class="row">
+        <label>Echte Fenstertransparenz<span class="hint">Desktop-Durchblick (Compositor nötig, Neustart erforderlich).</span></label>
+        <input type="checkbox" data-app-native ${a.nativeTransparency ? 'checked' : ''} />
+      </div>
+    </div>`;
+}
+
+async function patchAppearance(patch: Partial<SettingsData['appearance']>): Promise<void> {
+  settings = await verity.settings.update({ appearance: { ...settings.appearance, ...patch } });
+  applyAppearance();
+}
+
+function bindAppearance(body: HTMLElement): void {
+  const setOut = (name: string, text: string) => {
+    const el = body.querySelector(`[data-app-out="${name}"]`);
+    if (el) el.textContent = text;
+  };
+  body.querySelector<HTMLInputElement>('[data-app-couple]')?.addEventListener('change', async (e) => {
+    await patchAppearance({ coupleAll: (e.target as HTMLInputElement).checked });
+    void renderPanel();
+  });
+  for (const el of body.querySelectorAll<HTMLInputElement>('[data-app-alpha]')) {
+    el.addEventListener('input', () => {
+      const key = el.dataset.appAlpha as 'sidebarAlpha' | 'toolbarAlpha' | 'popupAlpha';
+      const v = Number(el.value) / 100;
+      setOut(key.replace('Alpha', ''), `${el.value} %`);
+      void patchAppearance({ [key]: v });
+    });
+  }
+  body.querySelector<HTMLInputElement>('[data-app-blur]')?.addEventListener('input', (e) => {
+    const v = Number((e.target as HTMLInputElement).value);
+    setOut('blur', `${v} px`);
+    void patchAppearance({ blur: v });
+  });
+  body.querySelector<HTMLInputElement>('[data-app-radius]')?.addEventListener('input', (e) => {
+    const v = Number((e.target as HTMLInputElement).value);
+    setOut('radius', `${v} px`);
+    void patchAppearance({ cornerRadius: v });
+  });
+  body.querySelector<HTMLSelectElement>('[data-app-side]')?.addEventListener('change', (e) => {
+    void patchAppearance({ sidebarSide: (e.target as HTMLSelectElement).value as 'left' | 'right' });
+  });
+  body.querySelector<HTMLInputElement>('[data-app-compact]')?.addEventListener('change', (e) => {
+    void patchAppearance({ compact: (e.target as HTMLInputElement).checked });
+  });
+  body.querySelector<HTMLSelectElement>('[data-app-accentmode]')?.addEventListener('change', (e) => {
+    void patchAppearance({ accentMode: (e.target as HTMLSelectElement).value as 'mono' | 'accent' });
+  });
+  body.querySelector<HTMLInputElement>('[data-app-accentcolor]')?.addEventListener('input', (e) => {
+    void patchAppearance({ accentColor: (e.target as HTMLInputElement).value });
+  });
+  body.querySelector<HTMLInputElement>('[data-app-native]')?.addEventListener('change', async (e) => {
+    await patchAppearance({ nativeTransparency: (e.target as HTMLInputElement).checked });
+    void renderPanel();
+    toast('Echte Fenstertransparenz greift nach einem Neustart.');
   });
 }
 
@@ -948,7 +1099,9 @@ async function init(): Promise<void> {
   settings = await verity.settings.get();
   themes = await verity.themes.list();
   stats = await verity.stats.get();
+  appearanceCaps = await verity.appearance.capabilities();
   applyThemeById(settings.theme);
+  applyAppearance();
   applyLayout();
   renderPinned();
   bindChrome();

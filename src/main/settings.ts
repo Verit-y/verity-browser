@@ -21,6 +21,7 @@ export class SettingsStore extends EventEmitter {
           ...raw,
           doh: { ...DEFAULT_SETTINGS.doh, ...(raw.doh ?? {}) },
           ai: { ...DEFAULT_SETTINGS.ai, ...(raw.ai ?? {}) },
+          appearance: { ...DEFAULT_SETTINGS.appearance, ...(raw.appearance ?? {}) },
           permissions: { ...(raw.permissions ?? {}) },
         };
         // Migration: alte Standard-Homepage (DuckDuckGo) -> eigene Startseite.
@@ -50,6 +51,7 @@ export class SettingsStore extends EventEmitter {
       ...patch,
       doh: { ...this.data.doh, ...(patch.doh ?? {}) },
       ai: { ...this.data.ai, ...(patch.ai ?? {}) },
+      appearance: { ...this.data.appearance, ...(patch.appearance ?? {}) },
       permissions: patch.permissions ?? this.data.permissions,
     };
     this.persist();

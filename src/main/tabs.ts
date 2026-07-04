@@ -44,7 +44,7 @@ export class TabManager {
   private activeId: number | null = null;
   /** Second pane of the split view, or null when split view is off. */
   private splitId: number | null = null;
-  private insets = { top: 50, left: 274 };
+  private insets = { top: 50, left: 274, right: 10 };
   private panelOpen = false;
 
   constructor(
@@ -278,8 +278,8 @@ export class TabManager {
     return file;
   }
 
-  setInsets(insets: { top: number; left: number }): void {
-    this.insets = insets;
+  setInsets(insets: { top: number; left: number; right?: number }): void {
+    this.insets = { ...insets, right: insets.right ?? TabManager.GAP };
     this.layout();
   }
 
@@ -363,7 +363,7 @@ export class TabManager {
     const area = {
       x: this.insets.left,
       y: this.insets.top,
-      width: Math.max(0, width - this.insets.left - GAP),
+      width: Math.max(0, width - this.insets.left - this.insets.right),
       height: Math.max(0, height - this.insets.top - GAP),
     };
     const split = this.splitId != null ? this.find(this.splitId) : undefined;

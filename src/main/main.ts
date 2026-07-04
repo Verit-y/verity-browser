@@ -9,6 +9,7 @@ import { registerIpc } from './ipc';
 import { buildMenu } from './menu';
 import { initUpdater } from './updater';
 import { applyDoH } from './security/doh';
+import { detectAppearanceCapabilities, enableTransparencyFlags } from './appearance';
 
 // Disable Chromium features that leak data or profile the user.
 app.commandLine.appendSwitch(
@@ -18,8 +19,17 @@ app.commandLine.appendSwitch(
 
 const isSmokeTest = process.argv.includes('--smoke');
 
+// Settings müssen VOR app.whenReady vorliegen, damit die Chromium-Transparenz-
+// Flags noch greifen. Der Store liest die Datei synchron.
+const settings: SettingsStore = new SettingsStore(
+  join(app.getPath('userData'), 'settings.json')
+);
+const capabilities = detectAppearanceCapabilities();
+const useNativeTransparency =
+  settings.get().appearance.nativeTransparency && capabilities.compositing;
+enableTransparencyFlags(useNativeTransparency);
+
 let win: BrowserWindow | null = null;
-let settings: SettingsStore;
 let stats: StatsTracker;
 let tabs: TabManager;
 let cookiesCleared = false;
@@ -37,7 +47,10 @@ function createMainWindow(): BrowserWindow {
     minWidth: 760,
     minHeight: 480,
     show: false,
-    backgroundColor: '#121317',
+    // Bei echter Fenstertransparenz kein opaker Hintergrund (sonst kein Durchblick).
+    ...(useNativeTransparency
+      ? { transparent: true, backgroundColor: '#00000000' }
+      : { backgroundColor: '#121317' }),
     title: 'Verity',
     autoHideMenuBar: true,
     // Eigene Titelleiste: rahmenlos, Fensterknöpfe als thembares Overlay.
@@ -58,7 +71,6 @@ function createMainWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  settings = new SettingsStore(join(app.getPath('userData'), 'settings.json'));
   stats = new StatsTracker();
   const vault = new Vault();
 

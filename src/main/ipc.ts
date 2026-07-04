@@ -7,6 +7,7 @@ import { TabManager } from './tabs';
 import { Vault } from './vault';
 import { listThemes, saveTheme } from './themes';
 import { listPlugins } from './plugins';
+import { detectAppearanceCapabilities } from './appearance';
 
 export interface IpcContext {
   win: BrowserWindow;
@@ -37,13 +38,17 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.on('tabs:toggle-split', () => tabs.toggleSplit());
 
   // --- Chrome layout --------------------------------------------------------
-  ipcMain.on('chrome:insets', (_e, insets: { top: number; left: number }) => {
+  ipcMain.on('chrome:insets', (_e, insets: { top: number; left: number; right?: number }) => {
     if (
       insets &&
       Number.isFinite(insets.top) &&
       Number.isFinite(insets.left)
     ) {
-      tabs.setInsets({ top: Math.round(insets.top), left: Math.round(insets.left) });
+      tabs.setInsets({
+        top: Math.round(insets.top),
+        left: Math.round(insets.left),
+        right: Number.isFinite(insets.right) ? Math.round(insets.right!) : undefined,
+      });
     }
   });
   ipcMain.on('chrome:panel', (_e, open: boolean) => tabs.setPanelOpen(!!open));
@@ -62,6 +67,9 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('settings:update', (_e, patch: Partial<SettingsData>) =>
     settings.update(patch ?? {})
   );
+
+  // --- Erscheinungsbild / Transparenz ----------------------------------------
+  ipcMain.handle('appearance:capabilities', () => detectAppearanceCapabilities());
 
   // --- Themes -----------------------------------------------------------------
   ipcMain.handle('themes:list', () => listThemes());

@@ -49,6 +49,13 @@
   --shadow-pop: 0 16px 50px rgba(0, 0, 0, 0.45);
   --sidebar-w: 264px;
   --sidebar-compact: 64px;
+
+  /* Erscheinungsbild: granulare Transparenz & Blur (von ui.ts gesetzt).
+     Deckkraft 1 = opak, 0 = transparent. */
+  --sidebar-alpha: 1;
+  --toolbar-alpha: 1;
+  --popup-alpha: 0.9;
+  --ui-blur: 18px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -122,9 +129,46 @@ button { font-family: inherit; color: inherit; }
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3) var(--sp-3);
   user-select: none;
-  transition: width var(--dur) var(--ease);
+  transition: width var(--dur) var(--ease), background var(--dur) var(--ease);
   overflow: hidden;
+  /* Granulare Transparenz: Deckkraft = alpha*100 %, Rest transparent. */
+  background: color-mix(in srgb, var(--bg-elevated) calc(var(--sidebar-alpha) * 100%), transparent);
+  backdrop-filter: blur(var(--ui-blur)) saturate(1.15);
+  border-radius: var(--r-md);
 }
+
+/* Adressleiste/Toolbar folgen der Toolbar-Deckkraft. */
+#toolbar, #addressform {
+  background: color-mix(in srgb, var(--bg-elevated) calc(var(--toolbar-alpha) * 100%), transparent);
+  border-radius: var(--r-md);
+}
+
+/* Compact-Modus: dichtere Abstände. */
+body.compact {
+  --sp-2: 5px;
+  --sp-3: 8px;
+  --sp-4: 11px;
+  --sidebar-w: 232px;
+}
+
+/* Monochrom: kein Farbakzent (Akzent = Text). */
+body.mono { --accent: var(--fg); }
+
+/* Sidebar rechts statt links. */
+body.sidebar-right.vertical #shell { flex-direction: row-reverse; }
+
+/* Hinweis-Banner (z. B. Transparenz nicht verfügbar). */
+.banner-warn {
+  margin: var(--sp-2) 0 var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 32%, transparent);
+  color: var(--fg);
+  font-size: 12px;
+  line-height: 1.5;
+}
+input[type='range'] { width: 160px; accent-color: var(--accent); }
 
 /* Navigationsreihe oben in der Sidebar */
 #toolbar { display: flex; align-items: center; gap: 2px; padding: 0 2px; }
@@ -295,11 +339,11 @@ button { font-family: inherit; color: inherit; }
 }
 #panel-card {
   width: min(880px, 100%);
-  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--bg-elevated) calc(var(--popup-alpha) * 100%), transparent);
   border: 1px solid var(--glass-brd);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-pop);
-  backdrop-filter: blur(30px);
+  backdrop-filter: blur(calc(var(--ui-blur) + 12px));
   animation: pop var(--dur) var(--ease);
 }
 @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(0.99); } to { opacity: 1; transform: none; } }
@@ -320,11 +364,11 @@ button { font-family: inherit; color: inherit; }
 }
 #cmd-card {
   width: min(620px, 92vw);
-  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--bg-elevated) calc(var(--popup-alpha) * 100%), transparent);
   border: 1px solid var(--glass-brd);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-pop);
-  backdrop-filter: blur(30px);
+  backdrop-filter: blur(calc(var(--ui-blur) + 12px));
   overflow: hidden;
   animation: pop var(--dur) var(--ease);
 }

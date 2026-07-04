@@ -3,6 +3,7 @@ import type {
   AiMode,
   AiResult,
   AiStatus,
+  AppearanceCapabilities,
   SettingsData,
   StatsPayload,
   TabState,
@@ -30,7 +31,7 @@ const api = {
     toggleSplit: () => ipcRenderer.send('tabs:toggle-split'),
   },
   chrome: {
-    setInsets: (insets: { top: number; left: number }) =>
+    setInsets: (insets: { top: number; left: number; right?: number }) =>
       ipcRenderer.send('chrome:insets', insets),
     panelOpen: (open: boolean) => ipcRenderer.send('chrome:panel', open),
     setTitlebar: (colors: { color: string; symbolColor: string }) =>
@@ -40,6 +41,10 @@ const api = {
     get: (): Promise<SettingsData> => ipcRenderer.invoke('settings:get'),
     update: (patch: Partial<SettingsData>): Promise<SettingsData> =>
       ipcRenderer.invoke('settings:update', patch),
+  },
+  appearance: {
+    capabilities: (): Promise<AppearanceCapabilities> =>
+      ipcRenderer.invoke('appearance:capabilities'),
   },
   themes: {
     list: (): Promise<ThemeSpec[]> => ipcRenderer.invoke('themes:list'),
