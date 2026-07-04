@@ -1,7 +1,16 @@
 // Shared types between main, preload and renderer.
 
 export type Layout = 'horizontal' | 'vertical';
-export type SearchEngineId = 'duckduckgo' | 'brave' | 'startpage' | 'google';
+export type SearchEngineId =
+  | 'duckduckgo'
+  | 'brave'
+  | 'startpage'
+  | 'leta'
+  | 'google';
+export type AdblockLevel = 'off' | 'standard' | 'aggressive';
+export type FingerprintLevel = 'off' | 'standard' | 'max';
+export type CookieMode = 'all' | 'block-third-party' | 'clear-on-tab' | 'clear-on-exit';
+export type HistoryMode = 'off' | 'plain' | 'encrypted';
 
 export interface TabState {
   id: number;
@@ -142,6 +151,17 @@ export interface SettingsData {
   clearCookiesOnExit: boolean;
   ai: AiConfig;
   appearance: AppearanceConfig;
+  /** Abstufung der Werbe-/Tracker-Blockierung. */
+  adblockLevel: AdblockLevel;
+  /** Abstufung des Fingerprinting-Schutzes. */
+  fingerprintLevel: FingerprintLevel;
+  cookieMode: CookieMode;
+  /** Verlaufs-Speicherung: keiner / Klartext / verschlüsselt. */
+  historyMode: HistoryMode;
+  /** Auto-Löschung nach n Tagen (0 = nie). */
+  historyRetentionDays: number;
+  /** Ersteinrichtungs-Wizard bereits abgeschlossen. */
+  onboardingComplete: boolean;
   /** origin -> list of allowed permission names */
   permissions: Record<string, string[]>;
 }
@@ -175,6 +195,12 @@ export const DEFAULT_SETTINGS: SettingsData = {
   clearCookiesOnExit: false,
   ai: { enabled: false, endpoint: 'http://127.0.0.1:11434', model: 'llama3.2' },
   appearance: { ...DEFAULT_APPEARANCE },
+  adblockLevel: 'standard',
+  fingerprintLevel: 'standard',
+  cookieMode: 'block-third-party',
+  historyMode: 'encrypted',
+  historyRetentionDays: 90,
+  onboardingComplete: false,
   permissions: {},
 };
 
@@ -182,6 +208,7 @@ export const SEARCH_ENGINES: Record<SearchEngineId, { name: string; url: string 
   duckduckgo: { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
   brave: { name: 'Brave Search', url: 'https://search.brave.com/search?q=' },
   startpage: { name: 'Startpage', url: 'https://www.startpage.com/sp/search?query=' },
+  leta: { name: 'Mullvad Leta', url: 'https://leta.mullvad.net/search?q=' },
   google: { name: 'Google', url: 'https://www.google.com/search?q=' },
 };
 

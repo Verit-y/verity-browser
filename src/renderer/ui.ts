@@ -374,13 +374,9 @@ interface ToggleDef {
 }
 
 const SECURITY_TOGGLES: ToggleDef[] = [
-  { key: 'adblock', label: 'Adblocker', hint: 'Blockiert bekannte Werbenetzwerke.' },
-  { key: 'trackerBlock', label: 'Tracker-Blocker', hint: 'Blockiert Analyse- und Tracking-Dienste.' },
   { key: 'httpsOnly', label: 'HTTPS-Only-Modus', hint: 'Erzwingt verschlüsselte Verbindungen.' },
-  { key: 'fingerprintProtection', label: 'Anti-Fingerprinting', hint: 'Canvas-Schutz & generischer User-Agent (für neue Tabs).' },
   { key: 'webrtcProtection', label: 'WebRTC-Leak-Schutz', hint: 'Verhindert IP-Leaks über WebRTC (für neue Tabs).' },
   { key: 'threatProtection', label: 'Malware- & Phishing-Schutz', hint: 'Verity Shield: blockiert Schadseiten und Marken-Imitationen mit Warnseite.' },
-  { key: 'clearCookiesOnExit', label: 'Cookies beim Beenden löschen', hint: 'Automatisches Aufräumen beim Schließen.' },
 ];
 
 function renderSettingsPanel(body: HTMLElement): void {
@@ -392,9 +388,24 @@ function renderSettingsPanel(body: HTMLElement): void {
     )
     .join('');
 
+  const sel = (attr: string, val: string, opts: [string, string][]) =>
+    `<select ${attr}>${opts.map(([v, l]) => `<option value="${v}" ${v === val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+
   body.innerHTML = `
     <div class="section">
       <h3>Sicherheit &amp; Datenschutz</h3>
+      <div class="row">
+        <label>Tracker &amp; Werbung<span class="hint">Abstufung der Blockierung.</span></label>
+        ${sel('data-adblock-level', s.adblockLevel, [['off', 'Aus'], ['standard', 'Standard'], ['aggressive', 'Aggressiv']])}
+      </div>
+      <div class="row">
+        <label>Fingerprinting-Schutz<span class="hint">Canvas-Schutz & UA-Normalisierung (neue Tabs).</span></label>
+        ${sel('data-fp-level', s.fingerprintLevel, [['off', 'Aus'], ['standard', 'Standard'], ['max', 'Maximal']])}
+      </div>
+      <div class="row">
+        <label>Cookie-Verhalten</label>
+        ${sel('data-cookie-mode', s.cookieMode, [['all', 'Alle erlauben'], ['block-third-party', 'Drittanbieter blockieren'], ['clear-on-tab', 'Beim Tab-Schließen löschen'], ['clear-on-exit', 'Beim Beenden löschen']])}
+      </div>
       ${SECURITY_TOGGLES.map(
         (t) => `
         <div class="row">
@@ -434,8 +445,16 @@ function renderSettingsPanel(body: HTMLElement): void {
         </select>
       </div>
       <div class="row">
+        <label>Verlauf<span class="hint">Speicherung des Browserverlaufs.</span></label>
+        ${sel('data-history-mode', s.historyMode, [['off', 'Kein Verlauf'], ['plain', 'Lokal (unverschlüsselt)'], ['encrypted', 'Lokal (verschlüsselt)']])}
+      </div>
+      <div class="row">
         <label>Script-Blocker (aktiver Tab)<span class="hint">Lädt den Tab ohne JavaScript neu.</span></label>
         <button class="btn" data-toggle-scripts>JS umschalten</button>
+      </div>
+      <div class="row">
+        <label>Datenschutz-Assistent<span class="hint">Ersteinrichtung erneut durchlaufen.</span></label>
+        <button class="btn" data-rerun-onboarding>Erneut durchlaufen</button>
       </div>
     </div>
 
@@ -502,6 +521,22 @@ function renderSettingsPanel(body: HTMLElement): void {
   body.querySelector('[data-toggle-scripts]')!.addEventListener('click', () => {
     verity.tabs.toggleScripts(null);
     openPanel(null);
+  });
+  body.querySelector<HTMLSelectElement>('[data-adblock-level]')!.addEventListener('change', async (e) => {
+    settings = await verity.settings.update({ adblockLevel: (e.target as HTMLSelectElement).value as SettingsData['adblockLevel'] });
+  });
+  body.querySelector<HTMLSelectElement>('[data-fp-level]')!.addEventListener('change', async (e) => {
+    settings = await verity.settings.update({ fingerprintLevel: (e.target as HTMLSelectElement).value as SettingsData['fingerprintLevel'] });
+  });
+  body.querySelector<HTMLSelectElement>('[data-cookie-mode]')!.addEventListener('change', async (e) => {
+    settings = await verity.settings.update({ cookieMode: (e.target as HTMLSelectElement).value as SettingsData['cookieMode'] });
+  });
+  body.querySelector<HTMLSelectElement>('[data-history-mode]')!.addEventListener('change', async (e) => {
+    settings = await verity.settings.update({ historyMode: (e.target as HTMLSelectElement).value as SettingsData['historyMode'] });
+  });
+  body.querySelector('[data-rerun-onboarding]')!.addEventListener('click', () => {
+    openPanel(null);
+    startOnboarding();
   });
   body.querySelector<HTMLInputElement>('[data-ai-enabled]')!.addEventListener('change', async (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
@@ -1175,6 +1210,233 @@ function onCmdKey(e: KeyboardEvent): void {
 }
 
 // ---------------------------------------------------------------------------
+// Onboarding-Wizard
+// ---------------------------------------------------------------------------
+
+interface OnbChoice {
+  value: string;
+  label: string;
+  hint: string;
+  recommended?: boolean;
+}
+interface OnbStep {
+  key: keyof SettingsData | 'telemetry' | 'summary';
+  title: string;
+  intro: string;
+  tech?: string;
+  choices?: OnbChoice[];
+}
+
+const ONB_STEPS: OnbStep[] = [
+  {
+    key: 'adblockLevel', title: 'Tracker & Werbung',
+    intro: 'Wie strikt soll Verity Werbung und Tracker blockieren?',
+    tech: 'Verity filtert Netzwerkanfragen gegen Host-Listen (webRequest) und blockiert bekannte Werbe-/Tracking-Domains.',
+    choices: [
+      { value: 'off', label: 'Aus', hint: 'Keine Blockierung.' },
+      { value: 'standard', label: 'Standard', hint: 'Bekannte Werbe- & Tracking-Netzwerke.', recommended: true },
+      { value: 'aggressive', label: 'Aggressiv', hint: 'Maximale Blockierung — kann einzelne Seiten beschädigen.' },
+    ],
+  },
+  {
+    key: 'doh', title: 'DNS-over-HTTPS',
+    intro: 'Verschlüsselte DNS-Auflösung verbirgt, welche Seiten du besuchst, vor dem Netzbetreiber.',
+    tech: 'DNS-Anfragen laufen verschlüsselt über HTTPS an einen Resolver statt im Klartext über das System-DNS.',
+    choices: [
+      { value: 'off', label: 'System-DNS', hint: 'Unverschlüsselt, wie vom Betriebssystem konfiguriert.' },
+      { value: 'cloudflare', label: 'Cloudflare', hint: 'Standard-Resolver.', recommended: true },
+      { value: 'mullvad', label: 'Mullvad', hint: 'Datenschutzfokussiert (keine Logs).' },
+      { value: 'custom', label: 'Eigener Resolver', hint: 'Eigene DoH-URL eingeben.' },
+    ],
+  },
+  {
+    key: 'webrtcProtection', title: 'WebRTC-Leak-Schutz',
+    intro: 'Verhindert, dass Webseiten deine lokale IP über WebRTC auslesen.',
+    tech: 'Verity deaktiviert die Preisgabe lokaler ICE-Kandidaten-IPs über die WebRTC-API.',
+    choices: [
+      { value: 'true', label: 'An', hint: 'Empfohlen. Blockiert lokale IP-Preisgabe.', recommended: true },
+      { value: 'false', label: 'Aus', hint: 'Nötig für manche Video-Call-Tools.' },
+    ],
+  },
+  {
+    key: 'fingerprintLevel', title: 'Fingerprinting-Schutz',
+    intro: 'Erschwert die Wiedererkennung deines Browsers anhand technischer Merkmale.',
+    tech: 'Canvas-Rauschen, generischer User-Agent und normalisierte Hardware-Werte reduzieren die Eindeutigkeit deines Fingerabdrucks.',
+    choices: [
+      { value: 'off', label: 'Aus', hint: 'Keine Maßnahmen.' },
+      { value: 'standard', label: 'Standard', hint: 'Canvas-Schutz & generischer User-Agent.', recommended: true },
+      { value: 'max', label: 'Maximal', hint: 'Zusätzlich strengere Normalisierung — kann Kompatibilität kosten.' },
+    ],
+  },
+  {
+    key: 'cookieMode', title: 'Cookie-Verhalten',
+    intro: 'Wie soll Verity mit Cookies umgehen?',
+    tech: 'Cookies werden je Modus eingeschränkt oder beim Schließen aus der Session-Partition gelöscht.',
+    choices: [
+      { value: 'all', label: 'Alle erlauben', hint: 'Keine Einschränkung.' },
+      { value: 'block-third-party', label: 'Drittanbieter blockieren', hint: 'Empfohlen.', recommended: true },
+      { value: 'clear-on-tab', label: 'Beim Tab-Schließen löschen', hint: 'Aggressiver.' },
+      { value: 'clear-on-exit', label: 'Beim Beenden löschen', hint: 'Cookies überleben die Sitzung nicht.' },
+    ],
+  },
+  {
+    key: 'historyMode', title: 'Browserverlauf',
+    intro: 'Soll Verity deinen Verlauf speichern? „Kein Verlauf“ bedeutet auch keine Chronik-Suche/Autovervollständigung.',
+    tech: 'Verschlüsselter Verlauf wird lokal per OS-Keychain (safeStorage) abgelegt; der Schlüssel verlässt nie deinen Rechner.',
+    choices: [
+      { value: 'off', label: 'Kein Verlauf', hint: 'Nichts wird gespeichert.' },
+      { value: 'plain', label: 'Lokal (unverschlüsselt)', hint: 'Als Klartext-Datei.' },
+      { value: 'encrypted', label: 'Lokal (verschlüsselt)', hint: 'Empfohlen. Per OS-Keychain.', recommended: true },
+    ],
+  },
+  {
+    key: 'searchEngine', title: 'Suchmaschine',
+    intro: 'Welche Suchmaschine soll die Adressleiste nutzen?',
+    choices: Object.entries(SEARCH_ENGINES).map(([id, e]) => ({
+      value: id, label: e.name, hint: '', recommended: id === 'duckduckgo',
+    })),
+  },
+  {
+    key: 'telemetry', title: 'Telemetrie',
+    intro: 'Verity sammelt grundsätzlich keine Nutzungsdaten. Es gibt keine Telemetrie-Infrastruktur und keinen versteckten Schalter.',
+    tech: 'Kein Analytics, keine Crash-Reports, keine Fernaufrufe außer den von dir gewählten Diensten (Suche, DoH, optionale lokale KI).',
+  },
+  { key: 'summary', title: 'Zusammenfassung', intro: 'Prüfe deine Auswahl — jede Einstellung ist später jederzeit änderbar.' },
+];
+
+let onbIndex = 0;
+let onbDraft: Partial<SettingsData> = {};
+let onbSelections: Record<string, string> = {};
+let onbCustomDoh = '';
+let onbRetention = 90;
+
+function startOnboarding(): void {
+  onbIndex = 0;
+  onbDraft = {};
+  onbSelections = {
+    adblockLevel: settings.adblockLevel,
+    doh: settings.doh.enabled ? (settings.doh.server.includes('mullvad') ? 'mullvad' : 'cloudflare') : 'off',
+    webrtcProtection: String(settings.webrtcProtection),
+    fingerprintLevel: settings.fingerprintLevel,
+    cookieMode: settings.cookieMode,
+    historyMode: settings.historyMode,
+    searchEngine: settings.searchEngine,
+  };
+  onbRetention = settings.historyRetentionDays;
+  const el = $('#onboarding');
+  el.hidden = false;
+  renderOnbStep();
+}
+
+function renderOnbStep(): void {
+  const step = ONB_STEPS[onbIndex];
+  const body = $('#onb-body');
+  const total = ONB_STEPS.length;
+  $('#onb-progress').innerHTML = ONB_STEPS.map(
+    (_s, i) => `<span class="onb-dot${i === onbIndex ? ' active' : ''}${i < onbIndex ? ' done' : ''}"></span>`
+  ).join('');
+  $('#onb-step-label').textContent = `Schritt ${onbIndex + 1} von ${total}`;
+  ($('#onb-back') as HTMLButtonElement).disabled = onbIndex === 0;
+  $('#onb-next').textContent = onbIndex === total - 1 ? 'Fertig & starten' : 'Weiter';
+
+  if (step.key === 'summary') {
+    body.innerHTML = `<h2>${step.title}</h2><p class="onb-intro">${step.intro}</p>` +
+      `<div class="onb-summary">${onbSummaryRows()}</div>`;
+    return;
+  }
+
+  const choices = step.choices ?? [];
+  const extra =
+    step.key === 'doh' && onbSelections.doh === 'custom'
+      ? `<input type="text" id="onb-doh-url" class="onb-input" placeholder="https://dein-resolver/dns-query" value="${escapeHtml(onbCustomDoh)}" />`
+      : step.key === 'historyMode' && onbSelections.historyMode !== 'off'
+      ? `<label class="onb-inline">Auto-Löschung:
+           <select id="onb-retention">
+             ${[7, 30, 90, 0].map((d) => `<option value="${d}" ${d === onbRetention ? 'selected' : ''}>${d === 0 ? 'Nie' : d + ' Tage'}</option>`).join('')}
+           </select></label>`
+      : '';
+
+  body.innerHTML = `
+    <h2>${step.title}</h2>
+    <p class="onb-intro">${step.intro}</p>
+    <div class="onb-choices">
+      ${choices.map((c) => `
+        <button class="onb-choice${onbSelections[step.key] === c.value ? ' sel' : ''}" data-val="${c.value}">
+          <span class="onb-choice-label">${c.label}${c.recommended ? ' <em>· empfohlen</em>' : ''}</span>
+          ${c.hint ? `<span class="onb-choice-hint">${c.hint}</span>` : ''}
+        </button>`).join('')}
+    </div>
+    ${extra}
+    ${step.tech ? `<details class="onb-tech"><summary>Was bedeutet das technisch?</summary><p>${step.tech}</p></details>` : ''}`;
+
+  for (const btn of body.querySelectorAll<HTMLButtonElement>('.onb-choice')) {
+    btn.addEventListener('click', () => {
+      onbSelections[step.key] = btn.dataset.val!;
+      renderOnbStep();
+    });
+  }
+  body.querySelector<HTMLInputElement>('#onb-doh-url')?.addEventListener('input', (e) => {
+    onbCustomDoh = (e.target as HTMLInputElement).value;
+  });
+  body.querySelector<HTMLSelectElement>('#onb-retention')?.addEventListener('change', (e) => {
+    onbRetention = Number((e.target as HTMLSelectElement).value);
+  });
+}
+
+function onbSummaryRows(): string {
+  const rows: [string, string][] = [
+    ['Tracker & Werbung', labelOf('adblockLevel', onbSelections.adblockLevel)],
+    ['DNS-over-HTTPS', labelOf('doh', onbSelections.doh)],
+    ['WebRTC-Schutz', onbSelections.webrtcProtection === 'true' ? 'An' : 'Aus'],
+    ['Fingerprinting', labelOf('fingerprintLevel', onbSelections.fingerprintLevel)],
+    ['Cookies', labelOf('cookieMode', onbSelections.cookieMode)],
+    ['Verlauf', labelOf('historyMode', onbSelections.historyMode)],
+    ['Suchmaschine', SEARCH_ENGINES[onbSelections.searchEngine as keyof typeof SEARCH_ENGINES]?.name ?? '—'],
+    ['Telemetrie', 'Deaktiviert'],
+  ];
+  return rows.map(([k, v]) => `<div class="onb-sum-row"><span>${k}</span><b>${escapeHtml(v)}</b></div>`).join('');
+}
+
+function labelOf(key: string, value: string): string {
+  const step = ONB_STEPS.find((s) => s.key === key);
+  return step?.choices?.find((c) => c.value === value)?.label ?? value;
+}
+
+function buildOnbPatch(): Partial<SettingsData> {
+  const dohMap: Record<string, { enabled: boolean; server: string }> = {
+    off: { enabled: false, server: settings.doh.server },
+    cloudflare: { enabled: true, server: 'https://cloudflare-dns.com/dns-query' },
+    mullvad: { enabled: true, server: 'https://dns.mullvad.net/dns-query' },
+    custom: { enabled: true, server: onbCustomDoh.trim() || settings.doh.server },
+  };
+  return {
+    adblockLevel: onbSelections.adblockLevel as SettingsData['adblockLevel'],
+    doh: dohMap[onbSelections.doh],
+    webrtcProtection: onbSelections.webrtcProtection === 'true',
+    fingerprintLevel: onbSelections.fingerprintLevel as SettingsData['fingerprintLevel'],
+    cookieMode: onbSelections.cookieMode as SettingsData['cookieMode'],
+    historyMode: onbSelections.historyMode as SettingsData['historyMode'],
+    historyRetentionDays: onbSelections.historyMode === 'off' ? 0 : onbRetention,
+    searchEngine: onbSelections.searchEngine as SettingsData['searchEngine'],
+    onboardingComplete: true,
+  };
+}
+
+function bindOnboarding(): void {
+  $('#onb-back').addEventListener('click', () => {
+    if (onbIndex > 0) { onbIndex--; renderOnbStep(); }
+  });
+  $('#onb-next').addEventListener('click', async () => {
+    if (onbIndex < ONB_STEPS.length - 1) { onbIndex++; renderOnbStep(); return; }
+    onbDraft = buildOnbPatch();
+    settings = await verity.settings.update(onbDraft);
+    $('#onboarding').hidden = true;
+    applyThemeById(settings.theme);
+    applyAppearance();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------------
 
@@ -1214,6 +1476,9 @@ async function init(): Promise<void> {
 
   window.addEventListener('resize', sendInsets);
   sendInsets();
+
+  bindOnboarding();
+  if (!settings.onboardingComplete) startOnboarding();
 }
 
 void init();
