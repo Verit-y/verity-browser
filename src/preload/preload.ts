@@ -11,6 +11,7 @@ import type {
   VaultEntry,
   VaultStatus,
   PluginInfo,
+  WorkspaceState,
 } from '../shared/types';
 
 /**
@@ -46,6 +47,20 @@ const api = {
     capabilities: (): Promise<AppearanceCapabilities> =>
       ipcRenderer.invoke('appearance:capabilities'),
   },
+  workspaces: {
+    get: (): Promise<WorkspaceState> => ipcRenderer.invoke('workspaces:get'),
+    activate: (id: string) => ipcRenderer.send('workspaces:activate', id),
+    create: (name?: string): Promise<WorkspaceState> =>
+      ipcRenderer.invoke('workspaces:create', name),
+    rename: (id: string, name: string): Promise<WorkspaceState> =>
+      ipcRenderer.invoke('workspaces:rename', id, name),
+    accent: (id: string, color: string): Promise<WorkspaceState> =>
+      ipcRenderer.invoke('workspaces:accent', id, color),
+    remove: (id: string): Promise<WorkspaceState> =>
+      ipcRenderer.invoke('workspaces:remove', id),
+    reorder: (ids: string[]): Promise<WorkspaceState> =>
+      ipcRenderer.invoke('workspaces:reorder', ids),
+  },
   themes: {
     list: (): Promise<ThemeSpec[]> => ipcRenderer.invoke('themes:list'),
     save: (spec: ThemeSpec): Promise<ThemeSpec> => ipcRenderer.invoke('themes:save', spec),
@@ -78,6 +93,9 @@ const api = {
   },
   onFocusAddress: (cb: () => void) => {
     ipcRenderer.on('chrome:focus-address', () => cb());
+  },
+  onWorkspaces: (cb: (state: WorkspaceState) => void) => {
+    ipcRenderer.on('workspaces:update', (_e, state: WorkspaceState) => cb(state));
   },
 };
 

@@ -8,6 +8,7 @@ import { Vault } from './vault';
 import { listThemes, saveTheme } from './themes';
 import { listPlugins } from './plugins';
 import { detectAppearanceCapabilities } from './appearance';
+import { WorkspaceStore } from './workspaces';
 
 export interface IpcContext {
   win: BrowserWindow;
@@ -15,10 +16,11 @@ export interface IpcContext {
   settings: SettingsStore;
   stats: StatsTracker;
   vault: Vault;
+  workspaces: WorkspaceStore;
 }
 
 export function registerIpc(ctx: IpcContext): void {
-  const { tabs, settings, stats, vault } = ctx;
+  const { tabs, settings, stats, vault, workspaces } = ctx;
 
   // --- Tabs ----------------------------------------------------------------
   ipcMain.on('tabs:create', (_e, url?: string, opts?: object) => {
@@ -70,6 +72,33 @@ export function registerIpc(ctx: IpcContext): void {
 
   // --- Erscheinungsbild / Transparenz ----------------------------------------
   ipcMain.handle('appearance:capabilities', () => detectAppearanceCapabilities());
+
+  // --- Workspaces ------------------------------------------------------------
+  const wsState = () => ({ list: workspaces.list(), activeId: workspaces.active().id });
+  ipcMain.handle('workspaces:get', () => wsState());
+  ipcMain.on('workspaces:activate', (_e, id: string) => tabs.setWorkspace(id));
+  ipcMain.handle('workspaces:create', (_e, name?: string) => {
+    const ws = workspaces.create(name);
+    tabs.setWorkspace(ws.id);
+    return wsState();
+  });
+  ipcMain.handle('workspaces:rename', (_e, id: string, name: string) => {
+    workspaces.rename(id, name);
+    return wsState();
+  });
+  ipcMain.handle('workspaces:accent', (_e, id: string, color: string) => {
+    workspaces.setAccent(id, color);
+    return wsState();
+  });
+  ipcMain.handle('workspaces:remove', (_e, id: string) => {
+    const newActive = workspaces.remove(id);
+    tabs.setWorkspace(newActive);
+    return wsState();
+  });
+  ipcMain.handle('workspaces:reorder', (_e, ids: string[]) => {
+    workspaces.reorder(ids);
+    return wsState();
+  });
 
   // --- Themes -----------------------------------------------------------------
   ipcMain.handle('themes:list', () => listThemes());

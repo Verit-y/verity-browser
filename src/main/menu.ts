@@ -1,11 +1,25 @@
 import { BrowserWindow, Menu } from 'electron';
 import { TabManager } from './tabs';
+import { WorkspaceStore } from './workspaces';
 
 /**
  * Application menu: provides the keyboard shortcuts that must work even when
  * focus is inside a page (the chrome renderer never sees those keys).
  */
-export function buildMenu(win: BrowserWindow, tabs: TabManager): void {
+export function buildMenu(win: BrowserWindow, tabs: TabManager, workspaces: WorkspaceStore): void {
+  // Ctrl+1..9 wechseln zum Workspace an der jeweiligen Position.
+  const workspaceShortcuts: Electron.MenuItemConstructorOptions[] = Array.from(
+    { length: 9 },
+    (_v, i) => ({
+      label: `Workspace ${i + 1}`,
+      accelerator: `CmdOrCtrl+${i + 1}`,
+      visible: false,
+      click: () => {
+        const ws = workspaces.list()[i];
+        if (ws) tabs.setWorkspace(ws.id);
+      },
+    })
+  );
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: 'Verity',
@@ -87,6 +101,8 @@ export function buildMenu(win: BrowserWindow, tabs: TabManager): void {
         },
       ],
     },
+    // Unsichtbares Menü nur für die Ctrl+1..9-Workspace-Shortcuts.
+    { label: 'Workspaces', submenu: workspaceShortcuts },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

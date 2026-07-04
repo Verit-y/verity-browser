@@ -4,6 +4,7 @@ import {
   StatsPayload,
   TabState,
   ThemeSpec,
+  WorkspaceState,
 } from '../shared/types';
 import type { VerityApi } from '../preload/preload';
 
@@ -27,6 +28,7 @@ let stats: StatsPayload = {
 let openPanelName: 'settings' | 'themes' | 'dashboard' | 'vault' | 'ai' | null = null;
 let themeDraft: ThemeSpec | null = null;
 let appearanceCaps: { compositing: boolean; sessionType: string } | null = null;
+let workspaceState: WorkspaceState = { list: [], activeId: '' };
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string): T =>
   document.querySelector(sel) as T;
@@ -109,7 +111,88 @@ function applyAppearance(): void {
   document.body.classList.toggle('compact', a.compact);
   document.body.classList.toggle('mono', a.accentMode === 'mono');
   document.body.classList.toggle('sidebar-right', a.sidebarSide === 'right');
+  applyWorkspaceAccent();
   requestAnimationFrame(sendInsets);
+}
+
+/** Aktiver Workspace überschreibt die Akzentfarbe (außer im Monochrom-Modus). */
+function applyWorkspaceAccent(): void {
+  if (settings.appearance?.accentMode === 'mono') return;
+  const active = workspaceState.list.find((w) => w.id === workspaceState.activeId);
+  if (active) document.documentElement.style.setProperty('--accent', active.accentColor);
+}
+
+// ---------------------------------------------------------------------------
+// Workspaces
+// ---------------------------------------------------------------------------
+
+function renderWorkspaces(): void {
+  const host = document.getElementById('workspaces');
+  if (!host) return;
+  host.innerHTML = '';
+  for (const ws of workspaceState.list) {
+    const chip = document.createElement('button');
+    chip.className = 'ws-chip' + (ws.id === workspaceState.activeId ? ' active' : '');
+    chip.draggable = true;
+    chip.dataset.wsId = ws.id;
+    chip.title = ws.name;
+    chip.innerHTML =
+      `<span class="ws-dot" style="background:${escapeHtml(ws.accentColor)}"></span>` +
+      `<span class="ws-name">${escapeHtml(ws.name)}</span>`;
+    chip.addEventListener('click', () => verity.workspaces.activate(ws.id));
+    chip.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      void workspaceContextMenu(ws.id, ws.name);
+    });
+    chip.addEventListener('dragstart', (e) => e.dataTransfer?.setData('text/ws', ws.id));
+    chip.addEventListener('dragover', (e) => e.preventDefault());
+    chip.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      const from = e.dataTransfer?.getData('text/ws');
+      if (from && from !== ws.id) await reorderWorkspaces(from, ws.id);
+    });
+    host.appendChild(chip);
+  }
+  const add = document.createElement('button');
+  add.className = 'ws-chip ws-add';
+  add.title = 'Neuer Workspace';
+  add.textContent = '+';
+  add.addEventListener('click', async () => {
+    workspaceState = await verity.workspaces.create();
+    renderWorkspaces();
+  });
+  host.appendChild(add);
+}
+
+async function reorderWorkspaces(fromId: string, toId: string): Promise<void> {
+  const ids = workspaceState.list.map((w) => w.id);
+  const from = ids.indexOf(fromId);
+  const to = ids.indexOf(toId);
+  if (from < 0 || to < 0) return;
+  ids.splice(to, 0, ids.splice(from, 1)[0]);
+  workspaceState = await verity.workspaces.reorder(ids);
+  renderWorkspaces();
+}
+
+async function workspaceContextMenu(id: string, name: string): Promise<void> {
+  const action = window.prompt(
+    `Workspace „${name}“:\n[r] Umbenennen · [f] Farbe (#hex) · [x] Löschen\nAktion eingeben (r/f/x):`,
+    'r'
+  );
+  if (!action) return;
+  if (action.startsWith('r')) {
+    const newName = window.prompt('Neuer Name:', name);
+    if (newName) workspaceState = await verity.workspaces.rename(id, newName);
+  } else if (action.startsWith('f')) {
+    const color = window.prompt('Akzentfarbe (#hex):', '#7c5cff');
+    if (color) workspaceState = await verity.workspaces.accent(id, color);
+  } else if (action.startsWith('x')) {
+    if (window.confirm(`Workspace „${name}“ und dessen Tabs schließen?`)) {
+      workspaceState = await verity.workspaces.remove(id);
+    }
+  }
+  renderWorkspaces();
+  applyWorkspaceAccent();
 }
 
 // ---------------------------------------------------------------------------
@@ -1100,11 +1183,19 @@ async function init(): Promise<void> {
   themes = await verity.themes.list();
   stats = await verity.stats.get();
   appearanceCaps = await verity.appearance.capabilities();
+  workspaceState = await verity.workspaces.get();
   applyThemeById(settings.theme);
   applyAppearance();
   applyLayout();
   renderPinned();
+  renderWorkspaces();
   bindChrome();
+
+  verity.onWorkspaces((state) => {
+    workspaceState = state;
+    renderWorkspaces();
+    applyWorkspaceAccent();
+  });
 
   verity.onTabs((t) => {
     tabs = t;

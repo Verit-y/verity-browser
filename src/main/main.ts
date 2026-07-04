@@ -10,6 +10,7 @@ import { buildMenu } from './menu';
 import { initUpdater } from './updater';
 import { applyDoH } from './security/doh';
 import { detectAppearanceCapabilities, enableTransparencyFlags } from './appearance';
+import { WorkspaceStore } from './workspaces';
 
 // Disable Chromium features that leak data or profile the user.
 app.commandLine.appendSwitch(
@@ -79,10 +80,21 @@ app.whenReady().then(() => {
     if (patch.doh) applyDoH(settings.get());
   });
 
+  const workspaces = new WorkspaceStore();
   win = createMainWindow();
-  tabs = new TabManager(win, settings, stats);
-  registerIpc({ win, tabs, settings, stats, vault });
-  buildMenu(win, tabs);
+  tabs = new TabManager(win, settings, stats, workspaces);
+  registerIpc({ win, tabs, settings, stats, vault, workspaces });
+  buildMenu(win, tabs, workspaces);
+
+  // Workspace-Wechsel/Änderungen an die UI spiegeln.
+  workspaces.on('change', () => {
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('workspaces:update', {
+        list: workspaces.list(),
+        activeId: workspaces.active().id,
+      });
+    }
+  });
 
   stats.on('update', (payload) => {
     if (win && !win.isDestroyed()) win.webContents.send('stats:update', payload);

@@ -8,6 +8,7 @@ import { StatsTracker } from './stats';
 import { hardenSession } from './security/harden';
 import { injectAntiFingerprint } from './security/fingerprint';
 import { allowHost, Threat, THREAT_LABELS } from './security/threats';
+import { WorkspaceStore } from './workspaces';
 
 // Navigations to this pseudo host (link on the warning page) mean
 // "proceed despite the warning". The .invalid TLD can never resolve.
@@ -25,6 +26,8 @@ interface Tab {
   isPrivate: boolean;
   scriptsBlocked: boolean;
   blockedCount: number;
+  /** Workspace this tab belongs to (isolation + visibility). */
+  workspaceId: string;
 }
 
 export interface TabCreateOptions {
@@ -50,7 +53,8 @@ export class TabManager {
   constructor(
     private win: BrowserWindow,
     private settings: SettingsStore,
-    private stats: StatsTracker
+    private stats: StatsTracker,
+    private workspaces: WorkspaceStore
   ) {
     win.on('resize', () => this.layout());
     win.on('maximize', () => this.layout());
@@ -87,9 +91,13 @@ export class TabManager {
     // Cookie isolation: every non-default container gets its own partition.
     // Partitions without the 'persist:' prefix are in-memory only - used for
     // private tabs and temporary containers.
+    const workspaceId = this.workspaces.active().id;
     const container =
       opts.container ?? (isPrivate ? `private-${Date.now()}` : 'default');
-    const partition = container === 'default' ? 'persist:default' : container;
+    // Default-Tabs nutzen die Workspace-Partition (echte Cookie-Isolation je
+    // Workspace); private/temporäre Container behalten ihre eigene Partition.
+    const partition =
+      container === 'default' ? WorkspaceStore.partitionFor(workspaceId) : container;
     const ses = session.fromPartition(partition);
     hardenSession(ses, this.settings, this.stats);
 
@@ -113,6 +121,7 @@ export class TabManager {
       isPrivate,
       scriptsBlocked: !!opts.scriptsBlocked,
       blockedCount: 0,
+      workspaceId,
     };
     const wc = view.webContents;
 
@@ -205,7 +214,8 @@ export class TabManager {
     this.win.contentView.removeChildView(tab.view);
     tab.view.webContents.close();
     if (this.activeId === id) {
-      const neighbor = this.tabs[Math.min(idx, this.tabs.length - 1)];
+      // Nach dem Schließen im selben Workspace bleiben.
+      const neighbor = this.workspaceTabs().pop();
       if (neighbor) this.activate(neighbor.id);
       else this.create();
     } else {
@@ -241,10 +251,32 @@ export class TabManager {
   }
 
   cycle(direction: 1 | -1): void {
-    if (this.tabs.length < 2 || this.activeId == null) return;
-    const idx = this.tabs.findIndex((t) => t.id === this.activeId);
-    const next = this.tabs[(idx + direction + this.tabs.length) % this.tabs.length];
+    const list = this.workspaceTabs();
+    if (list.length < 2 || this.activeId == null) return;
+    const idx = list.findIndex((t) => t.id === this.activeId);
+    const next = list[(idx + direction + list.length) % list.length];
     this.activate(next.id);
+  }
+
+  /** Tabs belonging to the active workspace, in order. */
+  private workspaceTabs(): Tab[] {
+    const wsId = this.workspaces.active().id;
+    return this.tabs.filter((t) => t.workspaceId === wsId);
+  }
+
+  /**
+   * Switches the active workspace: hides the current set, shows the target's
+   * tabs (creating a first tab if the workspace is empty).
+   */
+  setWorkspace(id: string): void {
+    this.workspaces.setActive(id);
+    const list = this.workspaceTabs();
+    if (list.length === 0) {
+      this.create();
+    } else {
+      this.splitId = null;
+      this.activate(list[list.length - 1].id);
+    }
   }
 
   /** Script blocker: recreates the tab with JavaScript enabled/disabled. */
@@ -289,8 +321,10 @@ export class TabManager {
   }
 
   private applyVisibility(): void {
+    const wsId = this.workspaces.active().id;
     for (const tab of this.tabs) {
-      const shown = tab.id === this.activeId || tab.id === this.splitId;
+      const inWorkspace = tab.workspaceId === wsId;
+      const shown = inWorkspace && (tab.id === this.activeId || tab.id === this.splitId);
       tab.view.setVisible(shown && !this.panelOpen);
     }
   }
@@ -322,7 +356,8 @@ export class TabManager {
   }
 
   state(): TabState[] {
-    return this.tabs.map((tab) => {
+    // Nur Tabs des aktiven Workspace an die UI melden.
+    return this.workspaceTabs().map((tab) => {
       const wc = tab.view.webContents;
       // Interne Seiten (Startseite, Warnseite) zeigen keine file://-Pfade.
       const raw = wc.getURL();

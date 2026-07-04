@@ -185,6 +185,17 @@ export const SEARCH_ENGINES: Record<SearchEngineId, { name: string; url: string 
   google: { name: 'Google', url: 'https://www.google.com/search?q=' },
 };
 
+export interface Workspace {
+  id: string;
+  name: string;
+  accentColor: string;
+}
+
+export interface WorkspaceState {
+  list: Workspace[];
+  activeId: string;
+}
+
 export interface VaultEntry {
   id: string;
   site: string;
