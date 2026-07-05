@@ -42,4 +42,5 @@ linux:
   category: Network
   synopsis: Der anpassbarste Datenschutz-Browser der Welt.
   desktop:
+    Name: Verity Browser
     StartupWMClass: Verity Browser
