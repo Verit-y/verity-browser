@@ -13,6 +13,13 @@ import { detectAppearanceCapabilities, enableTransparencyFlags } from './appeara
 import { WorkspaceStore } from './workspaces';
 import { HistoryStore } from './history';
 
+// Eigene X11-Fensterklasse (WM_CLASS), damit der Browser nicht mit einer
+// gleichnamigen App („Verity"-Musikplayer) in Taskleiste/Dock verschmilzt.
+// Der Datenordner bleibt der bisherige ("Verity"), nur die Fensterklasse ändert sich.
+const preservedUserData = app.getPath('userData');
+app.setName('Verity Browser');
+app.setPath('userData', preservedUserData);
+
 // Disable Chromium features that leak data or profile the user.
 app.commandLine.appendSwitch(
   'disable-features',
