@@ -138,9 +138,15 @@ function applyAppearance(): void {
 
 /** Aktiver Workspace überschreibt die Akzentfarbe (außer im Monochrom-Modus). */
 function applyWorkspaceAccent(): void {
-  if (settings.appearance?.accentMode === 'mono') return;
   const active = workspaceState.list.find((w) => w.id === workspaceState.activeId);
-  if (active) document.documentElement.style.setProperty('--accent', active.accentColor);
+  if (!active) return;
+  // Der Workspace-Farbverlauf oben in der Sidebar folgt immer dem Workspace –
+  // dezent, auch im Monochrom-Modus (Zen-Signature).
+  document.documentElement.style.setProperty('--ws-accent', active.accentColor);
+  // Die eigentliche Akzentfarbe nur im Akzent-Modus überschreiben.
+  if (settings.appearance?.accentMode !== 'mono') {
+    document.documentElement.style.setProperty('--accent', active.accentColor);
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -131,7 +131,12 @@ button { font-family: inherit; color: inherit; }
   transition: width var(--dur) var(--ease), background var(--dur) var(--ease);
   overflow: hidden;
   /* Granulare Transparenz: Deckkraft = alpha*100 %, Rest transparent. */
-  background: color-mix(in srgb, var(--bg-elevated) calc(var(--sidebar-alpha) * 100%), transparent);
+  /* Zen-Signature: sanfter Workspace-Farbverlauf am oberen Sidebar-Rand. */
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--ws-accent, var(--accent)) 12%, transparent),
+      transparent 240px),
+    color-mix(in srgb, var(--bg-elevated) calc(var(--sidebar-alpha) * 100%), transparent);
   backdrop-filter: blur(var(--ui-blur));
   border-radius: var(--r-md);
 }
@@ -380,12 +385,14 @@ input[type='range'] { width: 160px; accent-color: var(--accent); }
   background: var(--surface-active);
 }
 .tab:hover { background: var(--surface); color: var(--fg); }
+.tab:hover::before { background: color-mix(in srgb, var(--fg) 22%, transparent); }
 /* Aktiver Tab: dezente Fläche + dünner Akzent-Indikator links (sparsamer Akzent). */
 .tab.active {
   background: var(--surface-active);
   color: var(--fg);
   box-shadow: inset 2px 0 0 var(--accent);
 }
+.tab.active::before { background: color-mix(in srgb, var(--accent) 60%, var(--fg) 40%); }
 .tab .tab-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab .tab-flag {
   font-size: 9px; font-weight: 600; letter-spacing: 0.06em;
