@@ -121,13 +121,17 @@
       };
       tick(); setInterval(tick, 10000);
 
-      const shortcuts = [
+      let shortcuts = [
         { label: 'G', name: 'Google', url: 'https://www.google.com' },
         { label: 'Y', name: 'YouTube', url: 'https://www.youtube.com' },
         { label: 'R', name: 'Reddit', url: 'https://www.reddit.com' },
         { label: 'GH', name: 'GitHub', url: 'https://github.com' },
         { label: 'C', name: 'ChatGPT', url: 'https://chatgpt.com' },
       ];
+      try {
+        const parsed = JSON.parse(params.get('p') || '[]');
+        if (Array.isArray(parsed) && parsed.length) shortcuts = parsed;
+      } catch (e) { /* Standard-Verknüpfungen behalten */ }
       const host = document.getElementById('links');
       for (const s of shortcuts) {
         const a = document.createElement('a');

@@ -359,6 +359,8 @@ input[type='range'] { width: 160px; accent-color: var(--accent); }
 }
 .pin:hover { background: var(--surface-hover); color: var(--fg); transform: translateY(-1px); }
 .pin:active { transform: scale(0.96); }
+.pin-add { font-size: 18px; font-weight: 400; color: var(--fg-muted); border-style: dashed; }
+.pin-add:hover { color: var(--fg); }
 
 /* Workspace-Label */
 .sb-label {

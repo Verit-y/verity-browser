@@ -214,7 +214,11 @@ export class TabManager {
     if (url === START_URL || url === '') {
       const s = this.settings.get();
       const engine = SEARCH_ENGINES[s.searchEngine] ?? SEARCH_ENGINES.duckduckgo;
-      const hash = new URLSearchParams({ e: engine.url, n: engine.name }).toString();
+      const hash = new URLSearchParams({
+        e: engine.url,
+        n: engine.name,
+        p: JSON.stringify(s.pins ?? []),
+      }).toString();
       wc.loadFile(join(__dirname, 'renderer', 'start.html'), { hash }).catch(() => {});
       return;
     }

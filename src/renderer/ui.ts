@@ -1246,35 +1246,58 @@ function toggleSidebarCollapsed(): void {
 
 // --- Pinned-Schnellzugriffe --------------------------------------------------
 
-interface PinnedLink {
-  label: string;
-  url: string;
-}
-const PINNED: PinnedLink[] = [
-  { label: 'G', url: 'https://www.google.com' },
-  { label: 'Y', url: 'https://www.youtube.com' },
-  { label: 'R', url: 'https://www.reddit.com' },
-  { label: 'GH', url: 'https://github.com' },
-];
-
-function hueFor(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
-  return h;
+/** Ableitung eines 1–2-Zeichen-Labels aus dem Namen (z. B. GitHub → GH). */
+function pinLabel(name: string): string {
+  const caps = name.replace(/[^A-Za-z0-9]/g, '').match(/[A-Z0-9]/g);
+  if (caps && caps.length >= 2) return caps.slice(0, 2).join('');
+  return (name.trim()[0] ?? '?').toUpperCase();
 }
 
 function renderPinned(): void {
   const host = $('#pinned');
   host.replaceChildren();
-  for (const p of PINNED) {
+  const pins = settings.pins ?? [];
+  pins.forEach((p, i) => {
     const btn = document.createElement('button');
     btn.className = 'pin';
-    btn.title = p.url.replace(/^https?:\/\/(www\.)?/, '');
-    btn.textContent = p.label;
-    btn.style.setProperty('--pin-h', String(hueFor(p.url)));
+    btn.title = `${p.name} — ${p.url}\n(Rechtsklick zum Bearbeiten)`;
+    btn.textContent = p.label || pinLabel(p.name);
     btn.addEventListener('click', () => verity.tabs.create(p.url));
+    btn.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      void editPin(i);
+    });
     host.appendChild(btn);
+  });
+  const add = document.createElement('button');
+  add.className = 'pin pin-add';
+  add.title = 'Verknüpfung hinzufügen';
+  add.textContent = '+';
+  add.addEventListener('click', () => void editPin(-1));
+  host.appendChild(add);
+}
+
+/** Rechtsklick/Plus: Verknüpfung anlegen, umbenennen, Adresse ändern oder entfernen. */
+async function editPin(index: number): Promise<void> {
+  const pins = [...(settings.pins ?? [])];
+  const existing = index >= 0 ? pins[index] : null;
+  const name = window.prompt(
+    existing ? `„${existing.name}" umbenennen (leer = entfernen):` : 'Name der Verknüpfung:',
+    existing?.name ?? ''
+  );
+  if (name === null) return;
+  if (existing && name.trim() === '') {
+    pins.splice(index, 1);
+  } else {
+    const url = window.prompt('Adresse (URL):', existing?.url ?? 'https://');
+    if (url === null || url.trim() === '') return;
+    const norm = /^[a-z][a-z0-9+.-]*:\/\//i.test(url.trim()) ? url.trim() : 'https://' + url.trim();
+    const pin = { label: pinLabel(name), name: name.trim(), url: norm };
+    if (existing) pins[index] = pin;
+    else pins.push(pin);
   }
+  settings = await verity.settings.update({ pins });
+  renderPinned();
 }
 
 // --- Command-Palette ---------------------------------------------------------

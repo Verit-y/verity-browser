@@ -164,6 +164,8 @@ export interface SettingsData {
   onboardingComplete: boolean;
   /** Nach Neustart Tabs/Workspaces wiederherstellen (opt-in). */
   restoreSession: boolean;
+  /** Schnellzugriffe (Essentials / Startseite), per Rechtsklick editierbar. */
+  pins: PinnedLink[];
   /** origin -> list of allowed permission names */
   permissions: Record<string, string[]>;
 }
@@ -206,6 +208,13 @@ export const DEFAULT_SETTINGS: SettingsData = {
   historyRetentionDays: 90,
   onboardingComplete: false,
   restoreSession: false,
+  pins: [
+    { label: 'G', name: 'Google', url: 'https://www.google.com' },
+    { label: 'Y', name: 'YouTube', url: 'https://www.youtube.com' },
+    { label: 'R', name: 'Reddit', url: 'https://www.reddit.com' },
+    { label: 'GH', name: 'GitHub', url: 'https://github.com' },
+    { label: 'C', name: 'ChatGPT', url: 'https://chatgpt.com' },
+  ],
   permissions: {},
 };
 
@@ -222,6 +231,20 @@ export interface Workspace {
   name: string;
   accentColor: string;
 }
+
+export interface PinnedLink {
+  label: string;
+  name: string;
+  url: string;
+}
+
+export const DEFAULT_PINS: PinnedLink[] = [
+  { label: 'G', name: 'Google', url: 'https://www.google.com' },
+  { label: 'Y', name: 'YouTube', url: 'https://www.youtube.com' },
+  { label: 'R', name: 'Reddit', url: 'https://www.reddit.com' },
+  { label: 'GH', name: 'GitHub', url: 'https://github.com' },
+  { label: 'C', name: 'ChatGPT', url: 'https://chatgpt.com' },
+];
 
 export interface HistoryEntry {
   url: string;
