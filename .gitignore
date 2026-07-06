@@ -12,3 +12,7 @@ android-gecko/local.properties
 *.apk
 *.keystore
 firefox-edition-linux.tar.gz
+android-chromium/build/
+android-chromium/app/build/
+android-chromium/.gradle/
+android-chromium/local.properties

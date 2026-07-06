@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace 'com.verity.mobile'
-    compileSdk 35
+    compileSdk 34
 
     defaultConfig {
         applicationId 'com.verity.mobile'
@@ -12,10 +12,6 @@ android {
         targetSdk 34
         versionCode 1
         versionName '0.1.0'
-        // Nur 64-bit-ARM (alle modernen Handys) – hält das APK klein.
-        ndk {
-            abiFilters 'arm64-v8a'
-        }
     }
 
     compileOptions {
@@ -26,12 +22,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            // Zum einfachen Installieren mit dem Debug-Schlüssel signieren.
             signingConfig signingConfigs.debug
         }
     }
-}
-
-dependencies {
-    implementation 'org.mozilla.geckoview:geckoview:130.0.20240913135723'
 }

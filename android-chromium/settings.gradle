@@ -10,8 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://maven.mozilla.org/maven2/' }
     }
 }
-rootProject.name = 'verity-gecko'
+rootProject.name = 'verity-chromium'
 include ':app'
