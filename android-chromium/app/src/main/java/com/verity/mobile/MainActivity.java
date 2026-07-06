@@ -28,10 +28,10 @@ public class MainActivity extends Activity {
     private EditText bar;
     private ProgressBar progress;
 
-    private static final int BG = 0xFF14161B;
-    private static final int SURFACE = 0xFF1B2230;
-    private static final int FG = 0xFFECEFF4;
-    private static final int MUTED = 0xFF8D99AD;
+    private static final int BG = 0xFF0F0F11;
+    private static final int SURFACE = 0xFF1B1B1F;
+    private static final int FG = 0xFFE6E8EC;
+    private static final int MUTED = 0xFF8B8D93;
     private static final int ACCENT = 0xFF7C5CFF;
     private static final String SEARCH = "https://duckduckgo.com/?q=";
     private static final String HOME = "https://duckduckgo.com/";

@@ -4,18 +4,18 @@
   "author": "Verity Project",
   "dark": true,
   "colors": {
-    "bg": "#17181c",
-    "bgElevated": "#23252b",
-    "fg": "#f4f4f4",
-    "fgMuted": "#a6a8ad",
+    "bg": "#0f0f11",
+    "bgElevated": "#17171a",
+    "fg": "#e6e8ec",
+    "fgMuted": "#8b8d93",
     "accent": "#7c5cff",
     "accentFg": "#ffffff",
-    "border": "#2a2c33",
+    "border": "#242428",
     "danger": "#ef4444",
     "success": "#4ade80"
   },
   "font": "'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
-  "radius": 14,
+  "radius": 8,
   "transparency": 1,
   "animations": true
 }

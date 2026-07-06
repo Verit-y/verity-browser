@@ -36,6 +36,18 @@ const $ = <T extends HTMLElement = HTMLElement>(sel: string): T =>
 
 const addressInput = () => $<HTMLInputElement>('#address');
 
+// Kleine Inline-Icons (statt Emojis – ruhiger, konsistent mit dem Zen-Look).
+const svg = (path: string, size = 14) =>
+  `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+const ICON = {
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
+  globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>'),
+  close: svg('<path d="M6 6l12 12M18 6 6 18"/>', 12),
+  warn: svg('<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/>'),
+  check: svg('<path d="M20 6 9 17l-5-5"/>', 12),
+  x: svg('<path d="M6 6l12 12M18 6 6 18"/>', 12),
+};
+
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!
@@ -107,7 +119,13 @@ function applyAppearance(): void {
   root.setProperty('--toolbar-alpha', String(couple ?? a.toolbarAlpha));
   root.setProperty('--popup-alpha', String(couple ?? a.popupAlpha));
   root.setProperty('--ui-blur', `${a.blur}px`);
-  root.setProperty('--radius', `${a.cornerRadius}px`);
+  // Eckenradius steuert die gesamte Radien-Skala (Zen: klein & konsistent).
+  const r = Math.max(0, a.cornerRadius);
+  root.setProperty('--radius', `${r}px`);
+  root.setProperty('--r-sm', `${Math.max(2, r - 2)}px`);
+  root.setProperty('--r-md', `${r}px`);
+  root.setProperty('--r-lg', `${r + 2}px`);
+  root.setProperty('--r-xl', `${r + 4}px`);
   if (a.accentMode === 'accent') root.setProperty('--accent', a.accentColor);
   document.body.classList.toggle('compact', a.compact);
   document.body.classList.toggle('mono', a.accentMode === 'mono');
@@ -571,7 +589,7 @@ function renderAppearanceSection(s: SettingsData): string {
   const pct = (v: number) => Math.round(v * 100);
   const warn =
     a.nativeTransparency && appearanceCaps && !appearanceCaps.compositing
-      ? `<div class="banner-warn">⚠ Echte Fenstertransparenz ist auf diesem System vermutlich nicht verfügbar
+      ? `<div class="banner-warn">${ICON.warn} Echte Fenstertransparenz ist auf diesem System vermutlich nicht verfügbar
            (kein Compositor erkannt${appearanceCaps.sessionType ? `, Session: ${escapeHtml(appearanceCaps.sessionType)}` : ''}).
            Der simulierte Glass-Effekt (UI-Ebenen) funktioniert trotzdem.</div>`
       : '';
@@ -855,7 +873,7 @@ function renderDashboardPanel(body: HTMLElement): void {
     <div class="section">
       <h3>Aktive Schutzfunktionen</h3>
       ${protections
-        .map(([name, on]) => `<span class="chip ${on ? 'on' : 'off'}">${name} ${on ? '✓' : '✕'}</span>`)
+        .map(([name, on]) => `<span class="chip ${on ? 'on' : 'off'}">${on ? ICON.check : ICON.x} ${name}</span>`)
         .join('')}
     </div>
     <div class="section">
@@ -917,13 +935,13 @@ async function renderHistoryPanel(body: HTMLElement): Promise<void> {
           .map(
             (e) => `
           <div class="hist-row" data-url="${escapeHtml(e.url)}" data-ts="${e.ts}">
-            <span class="hist-type ${e.type}">${e.type === 'search' ? '🔍' : '🌐'}</span>
+            <span class="hist-type ${e.type}">${e.type === 'search' ? ICON.search : ICON.globe}</span>
             <span class="hist-main">
               <span class="hist-title">${escapeHtml(e.title || e.url)}</span>
               <span class="hist-url">${escapeHtml(e.url)}</span>
             </span>
             <span class="hist-time">${new Date(e.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
-            <button class="hist-del" data-del title="Entfernen">✕</button>
+            <button class="hist-del" data-del title="Entfernen">${ICON.close}</button>
           </div>`
           )
           .join('')}`
@@ -1353,7 +1371,7 @@ interface OnbChoice {
   recommended?: boolean;
 }
 interface OnbStep {
-  key: keyof SettingsData | 'telemetry' | 'summary';
+  key: keyof SettingsData | 'telemetry' | 'summary' | 'accentMode';
   title: string;
   intro: string;
   tech?: string;
@@ -1430,6 +1448,15 @@ const ONB_STEPS: OnbStep[] = [
     })),
   },
   {
+    key: 'accentMode', title: 'Erscheinungsbild',
+    intro: 'Verity ist standardmäßig ruhig und fast monochrom. Möchtest du einen Farbakzent setzen?',
+    tech: 'Der Akzent färbt nur wenige Elemente (aktiver Tab, Fokus-Ring, Primärknopf) — der Rest bleibt neutral. Jederzeit in den Einstellungen änderbar.',
+    choices: [
+      { value: 'mono', label: 'Monochrom', hint: 'Ganz ohne Farbe — maximal ruhig.', recommended: true },
+      { value: 'accent', label: 'Mit Akzentfarbe', hint: 'Eine dezente Farbe für aktive Elemente.' },
+    ],
+  },
+  {
     key: 'telemetry', title: 'Telemetrie',
     intro: 'Verity sammelt grundsätzlich keine Nutzungsdaten. Es gibt keine Telemetrie-Infrastruktur und keinen versteckten Schalter.',
     tech: 'Kein Analytics, keine Crash-Reports, keine Fernaufrufe außer den von dir gewählten Diensten (Suche, DoH, optionale lokale KI).',
@@ -1442,6 +1469,7 @@ let onbDraft: Partial<SettingsData> = {};
 let onbSelections: Record<string, string> = {};
 let onbCustomDoh = '';
 let onbRetention = 90;
+let onbAccent = '#7c5cff';
 
 function startOnboarding(): void {
   onbIndex = 0;
@@ -1454,8 +1482,10 @@ function startOnboarding(): void {
     cookieMode: settings.cookieMode,
     historyMode: settings.historyMode,
     searchEngine: settings.searchEngine,
+    accentMode: settings.appearance.accentMode,
   };
   onbRetention = settings.historyRetentionDays;
+  onbAccent = settings.appearance.accentColor || '#7c5cff';
   const el = $('#onboarding');
   el.hidden = false;
   // Native Seiten-Views ausblenden, sonst rendern sie über dem Wizard.
@@ -1489,6 +1519,9 @@ function renderOnbStep(): void {
            <select id="onb-retention">
              ${[7, 30, 90, 0].map((d) => `<option value="${d}" ${d === onbRetention ? 'selected' : ''}>${d === 0 ? 'Nie' : d + ' Tage'}</option>`).join('')}
            </select></label>`
+      : step.key === 'accentMode' && onbSelections.accentMode === 'accent'
+      ? `<label class="onb-inline">Akzentfarbe:
+           <input type="color" id="onb-accent" value="${escapeHtml(onbAccent)}" /></label>`
       : '';
 
   body.innerHTML = `
@@ -1516,6 +1549,9 @@ function renderOnbStep(): void {
   body.querySelector<HTMLSelectElement>('#onb-retention')?.addEventListener('change', (e) => {
     onbRetention = Number((e.target as HTMLSelectElement).value);
   });
+  body.querySelector<HTMLInputElement>('#onb-accent')?.addEventListener('input', (e) => {
+    onbAccent = (e.target as HTMLInputElement).value;
+  });
 }
 
 function onbSummaryRows(): string {
@@ -1527,6 +1563,7 @@ function onbSummaryRows(): string {
     ['Cookies', labelOf('cookieMode', onbSelections.cookieMode)],
     ['Verlauf', labelOf('historyMode', onbSelections.historyMode)],
     ['Suchmaschine', SEARCH_ENGINES[onbSelections.searchEngine as keyof typeof SEARCH_ENGINES]?.name ?? '—'],
+    ['Akzent', onbSelections.accentMode === 'accent' ? `Farbe ${onbAccent}` : 'Monochrom'],
     ['Telemetrie', 'Deaktiviert'],
   ];
   return rows.map(([k, v]) => `<div class="onb-sum-row"><span>${k}</span><b>${escapeHtml(v)}</b></div>`).join('');
@@ -1553,6 +1590,11 @@ function buildOnbPatch(): Partial<SettingsData> {
     historyMode: onbSelections.historyMode as SettingsData['historyMode'],
     historyRetentionDays: onbSelections.historyMode === 'off' ? 0 : onbRetention,
     searchEngine: onbSelections.searchEngine as SettingsData['searchEngine'],
+    appearance: {
+      ...settings.appearance,
+      accentMode: onbSelections.accentMode as SettingsData['appearance']['accentMode'],
+      accentColor: onbAccent,
+    },
     onboardingComplete: true,
   };
 }

@@ -14,7 +14,7 @@
     "danger": "#fb7185",
     "success": "#5eead4"
   },
-  "radius": 14,
+  "radius": 8,
   "transparency": 0.82,
   "animations": true
 }

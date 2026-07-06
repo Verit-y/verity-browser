@@ -175,7 +175,7 @@ export const DEFAULT_APPEARANCE: AppearanceConfig = {
   popupAlpha: 0.85,
   blur: 22,
   coupleAll: true,
-  cornerRadius: 14,
+  cornerRadius: 8,
   sidebarSide: 'left',
   compact: false,
   accentMode: 'accent',
