@@ -160,6 +160,16 @@ body.native-transparent, body.native-transparent #titlebar { background: transpa
 /* Sidebar rechts statt links. */
 body.sidebar-right.vertical #shell { flex-direction: row-reverse; }
 
+/* Sidebar ganz eingeklappt: Seite/Video füllt den freien Platz. */
+body.sidebar-collapsed #chrome {
+  width: 0 !important;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+#btn-collapse svg { transition: transform var(--dur) var(--ease); }
+body.sidebar-collapsed #btn-collapse svg { transform: scaleX(-1); }
+
 /* Hinweis-Banner (z. B. Transparenz nicht verfügbar). */
 .banner-warn {
   margin: var(--sp-2) 0 var(--sp-3);

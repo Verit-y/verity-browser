@@ -74,6 +74,11 @@ export function buildMenu(win: BrowserWindow, tabs: TabManager, workspaces: Work
           click: () => win.webContents.send('chrome:focus-address'),
         },
         {
+          label: 'Sidebar ein-/ausklappen',
+          accelerator: 'CmdOrCtrl+B',
+          click: () => win.webContents.send('chrome:toggle-sidebar'),
+        },
+        {
           label: 'Nächster Tab',
           accelerator: 'Control+Tab',
           click: () => tabs.cycle(1),

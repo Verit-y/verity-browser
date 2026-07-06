@@ -1157,6 +1157,7 @@ function bindChrome(): void {
   $('#btn-reader').addEventListener('click', () => verity.tabs.reader());
   $('#btn-pip').addEventListener('click', () => verity.tabs.pip());
   $('#btn-sidebar').addEventListener('click', toggleCompact);
+  $('#btn-collapse').addEventListener('click', toggleSidebarCollapsed);
   $('#btn-screenshot').addEventListener('click', async () => {
     const path = await verity.tools.screenshot();
     toast(path ? 'Screenshot gespeichert.' : 'Screenshot fehlgeschlagen.');
@@ -1203,6 +1204,20 @@ function toggleCompact(): void {
     sendInsets();
   };
   chrome.addEventListener('transitionend', onDone);
+}
+
+/** Klappt die Sidebar ganz weg, damit die Seite (z. B. ein Video) den Platz füllt. */
+function toggleSidebarCollapsed(): void {
+  document.body.classList.toggle('sidebar-collapsed');
+  const chrome = $('#chrome');
+  const onDone = (e: TransitionEvent) => {
+    if (e.propertyName !== 'width') return;
+    chrome.removeEventListener('transitionend', onDone);
+    sendInsets();
+  };
+  chrome.addEventListener('transitionend', onDone);
+  // Fallback, falls keine width-Transition feuert.
+  setTimeout(sendInsets, 240);
 }
 
 // --- Pinned-Schnellzugriffe --------------------------------------------------
@@ -1595,6 +1610,7 @@ async function init(): Promise<void> {
     addressInput().focus();
     addressInput().select();
   });
+  verity.onToggleSidebar(() => toggleSidebarCollapsed());
 
   window.addEventListener('resize', sendInsets);
   sendInsets();

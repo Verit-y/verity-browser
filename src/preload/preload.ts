@@ -114,6 +114,9 @@ const api = {
   onFocusAddress: (cb: () => void) => {
     ipcRenderer.on('chrome:focus-address', () => cb());
   },
+  onToggleSidebar: (cb: () => void) => {
+    ipcRenderer.on('chrome:toggle-sidebar', () => cb());
+  },
   onWorkspaces: (cb: (state: WorkspaceState) => void) => {
     ipcRenderer.on('workspaces:update', (_e, state: WorkspaceState) => cb(state));
   },
