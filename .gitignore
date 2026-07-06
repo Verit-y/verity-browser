@@ -5,3 +5,10 @@ release/
 .DS_Store
 Thumbs.db
 android/build/
+android-gecko/build/
+android-gecko/app/build/
+android-gecko/.gradle/
+android-gecko/local.properties
+*.apk
+*.keystore
+firefox-edition-linux.tar.gz
