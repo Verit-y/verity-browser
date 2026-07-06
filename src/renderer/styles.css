@@ -52,9 +52,9 @@
 
   /* Erscheinungsbild: granulare Transparenz & Blur (von ui.ts gesetzt).
      Deckkraft 1 = opak, 0 = transparent. */
-  --sidebar-alpha: 1;
-  --toolbar-alpha: 1;
-  --popup-alpha: 0.9;
+  --sidebar-alpha: 0;
+  --toolbar-alpha: 0;
+  --popup-alpha: 0.85;
   --ui-blur: 18px;
 }
 
@@ -70,12 +70,15 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Ruhiger, near-monochromer Hintergrund (Zen-Ästhetik, kein Farb-Glow). */
+/* Zen-Signature: weicher Workspace-Farbverlauf füllt das ganze Fenster;
+   die Sidebar ist transparent und schwebt darüber, die Seite ist eine
+   abgerundete Karte in diesem Farbraum. */
 body {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(1200px 800px at 80% -10%, rgba(255, 255, 255, 0.025), transparent 60%),
+    radial-gradient(1100px 900px at 12% -8%, color-mix(in srgb, var(--ws-accent, var(--accent)) 26%, transparent), transparent 58%),
+    radial-gradient(1000px 900px at 108% 112%, color-mix(in srgb, var(--ws-accent, var(--accent)) 16%, transparent), transparent 55%),
     var(--bg);
 }
 body.no-anim * { transition: none !important; animation: none !important; }
@@ -131,14 +134,9 @@ button { font-family: inherit; color: inherit; }
   transition: width var(--dur) var(--ease), background var(--dur) var(--ease);
   overflow: hidden;
   /* Granulare Transparenz: Deckkraft = alpha*100 %, Rest transparent. */
-  /* Zen-Signature: sanfter Workspace-Farbverlauf am oberen Sidebar-Rand. */
-  background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--ws-accent, var(--accent)) 12%, transparent),
-      transparent 240px),
-    color-mix(in srgb, var(--bg-elevated) calc(var(--sidebar-alpha) * 100%), transparent);
-  backdrop-filter: blur(var(--ui-blur));
-  border-radius: var(--r-md);
+  /* Transparent: die Sidebar schwebt über dem Fenster-Farbverlauf (Zen-Look).
+     --sidebar-alpha (Standard 0) blendet bei Bedarf eine Fläche ein. */
+  background: color-mix(in srgb, var(--bg-elevated) calc(var(--sidebar-alpha) * 100%), transparent);
 }
 
 /* Adressleiste/Toolbar folgen der Toolbar-Deckkraft. */

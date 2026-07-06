@@ -169,9 +169,9 @@ export interface SettingsData {
 }
 
 export const DEFAULT_APPEARANCE: AppearanceConfig = {
-  // Sichtbarer Glass-Effekt ab Werk (Deckkraft < 1 = durchscheinend).
-  sidebarAlpha: 0.72,
-  toolbarAlpha: 0.72,
+  // Zen-Look: Sidebar/Toolbar transparent, Fenster-Farbverlauf scheint durch.
+  sidebarAlpha: 0,
+  toolbarAlpha: 0,
   popupAlpha: 0.85,
   blur: 22,
   coupleAll: true,
