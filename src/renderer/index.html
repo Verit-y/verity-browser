@@ -9,61 +9,59 @@
 </head>
 <body class="vertical">
   <div id="titlebar">
+    <button id="btn-collapse" class="icon-btn" title="Sidebar ein-/ausklappen (Strg+B)" aria-label="Sidebar umschalten">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M9 5v14" /></svg>
+    </button>
     <div id="brand" title="Verity">
-      <!-- PLACEHOLDER "V"-Monogramm — durch finales Branding ersetzen -->
       <svg viewBox="0 0 24 24">
         <path d="M4 5 L12 19 L20 5" fill="none" stroke="currentColor"
               stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
-      <span>Verit<i>y</i></span>
     </div>
-    <button id="btn-collapse" class="icon-btn" title="Sidebar ein-/ausklappen (Strg+B)" aria-label="Sidebar umschalten">
-      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M9 5v14" /></svg>
-    </button>
+    <div id="nav">
+      <button id="btn-back" class="icon-btn" title="Zurück" aria-label="Zurück">
+        <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" /></svg>
+      </button>
+      <button id="btn-forward" class="icon-btn" title="Vor" aria-label="Vor">
+        <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
+      </button>
+      <button id="btn-reload" class="icon-btn" title="Neu laden" aria-label="Neu laden">
+        <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" /></svg>
+      </button>
+    </div>
+
+    <form id="addressform" autocomplete="off">
+      <span id="shield" title="Blockierte Anfragen auf diesem Tab">
+        <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z" /></svg>
+        <b id="shield-count">0</b>
+      </span>
+      <input id="address" type="text" spellcheck="false" placeholder="Suchen oder Adresse eingeben" />
+    </form>
+
     <div id="drag-fill"></div>
-    <div id="tabs-host"></div>
+    <div id="top-actions">
+      <span id="mullvad-badge" class="icon-btn" title="Mullvad VPN aktiv (experimentell)" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z" /><path d="M9 12l2 2 4-4" /></svg>
+      </span>
+      <button id="btn-reader" class="icon-btn" title="Reader-Modus" aria-label="Reader-Modus">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>
+      </button>
+      <button id="btn-pip" class="icon-btn" title="Bild-in-Bild" aria-label="Bild-in-Bild">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><rect x="12" y="11" width="7" height="6" rx="1" /></svg>
+      </button>
+      <button id="btn-split" class="icon-btn" title="Split View (Strg+Alt+S)" aria-label="Split View">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M12 5v14" /></svg>
+      </button>
+      <button id="btn-sidebar" class="icon-btn" title="Compact-Modus" aria-label="Compact-Modus">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M9 5v14" /></svg>
+      </button>
+    </div>
   </div>
 
   <div id="shell">
     <div id="card-frame"></div>
 
     <aside id="chrome">
-      <div id="toolbar">
-        <button id="btn-back" class="icon-btn" title="Zurück" aria-label="Zurück">
-          <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" /></svg>
-        </button>
-        <button id="btn-forward" class="icon-btn" title="Vor" aria-label="Vor">
-          <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
-        </button>
-        <button id="btn-reload" class="icon-btn" title="Neu laden" aria-label="Neu laden">
-          <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" /></svg>
-        </button>
-        <span class="toolbar-spring"></span>
-        <span id="mullvad-badge" class="icon-btn" title="Mullvad VPN aktiv (experimentell)" hidden>
-          <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z" /><path d="M9 12l2 2 4-4" /></svg>
-        </span>
-        <button id="btn-reader" class="icon-btn" title="Reader-Modus" aria-label="Reader-Modus">
-          <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>
-        </button>
-        <button id="btn-pip" class="icon-btn" title="Bild-in-Bild" aria-label="Bild-in-Bild">
-          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><rect x="12" y="11" width="7" height="6" rx="1" /></svg>
-        </button>
-        <button id="btn-split" class="icon-btn" title="Split View (Strg+Alt+S)" aria-label="Split View">
-          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M12 5v14" /></svg>
-        </button>
-        <button id="btn-sidebar" class="icon-btn" title="Compact-Modus" aria-label="Compact-Modus">
-          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M9 5v14" /></svg>
-        </button>
-      </div>
-
-      <form id="addressform" autocomplete="off">
-        <span id="shield" title="Blockierte Anfragen auf diesem Tab">
-          <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z" /></svg>
-          <b id="shield-count">0</b>
-        </span>
-        <input id="address" type="text" spellcheck="false" placeholder="Suchen oder Adresse eingeben" />
-      </form>
-
       <div id="pinned"></div>
 
       <div id="workspaces" role="tablist" aria-label="Workspaces"></div>

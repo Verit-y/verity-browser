@@ -3,9 +3,9 @@
    Abstände, Radien und Bewegungen sind hier als Tokens definiert. */
 
 :root {
-  /* Theme-Farben (Default = Verity Dark, near-monochrom wie Zen) */
-  --bg: #0f0f11;
-  --bg-elevated: #17171a;
+  /* Theme-Farben (Default = Verity Dark, near-black wie Zen) */
+  --bg: #0d0d0f;
+  --bg-elevated: #161618;
   --fg: #e6e8ec;
   --fg-muted: #8b8d93;
   --accent: #7c5cff;
@@ -39,12 +39,12 @@
   --dur: 170ms;
 
   /* Flächen (Zens --zen-toolbar-element-bg-Muster: dezente weiße Overlays) */
-  --glass-bg: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+  --glass-bg: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
   --glass-brd: rgba(255, 255, 255, 0.06);
   --hairline: rgba(255, 255, 255, 0.06);
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-hover: rgba(255, 255, 255, 0.07);
-  --surface-active: rgba(255, 255, 255, 0.10);
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-hover: rgba(255, 255, 255, 0.09);
+  --surface-active: rgba(255, 255, 255, 0.12);
   --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.28);
   --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.38);
   --sidebar-w: 264px;
@@ -77,34 +77,46 @@ body {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(1100px 900px at 12% -8%, color-mix(in srgb, var(--ws-accent, var(--accent)) 26%, transparent), transparent 58%),
-    radial-gradient(1000px 900px at 108% 112%, color-mix(in srgb, var(--ws-accent, var(--accent)) 16%, transparent), transparent 55%),
+    radial-gradient(1100px 900px at 10% -10%, color-mix(in srgb, var(--ws-accent, var(--accent)) 10%, transparent), transparent 52%),
+    radial-gradient(1000px 900px at 110% 115%, color-mix(in srgb, var(--ws-accent, var(--accent)) 7%, transparent), transparent 50%),
     var(--bg);
 }
 body.no-anim * { transition: none !important; animation: none !important; }
 
 button { font-family: inherit; color: inherit; }
 
-/* ============================ Titelleiste ============================ */
-/* Schlanke Drag-Zone; Fensterknöpfe liefert das OS-Overlay rechts. */
+/* ============================ Top-Leiste (Zen-Stil) ============================ */
+/* Durchgehende Leiste oben: Sidebar-Toggle, Navigation, zentrierte Adressleiste,
+   Seiten-Aktionen. Fensterknöpfe liefert das OS-Overlay rechts. */
 #titlebar {
   flex: none;
-  height: env(titlebar-area-height, 40px);
-  min-height: 38px;
+  position: relative;
+  height: 46px;
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  padding: 0 var(--sp-3);
+  gap: 3px;
+  padding: 0 8px 0 8px;
+  padding-right: 140px; /* Platz für die OS-Fensterknöpfe */
   -webkit-app-region: drag;
   user-select: none;
 }
-#titlebar button, #titlebar #tabstrip { -webkit-app-region: no-drag; }
-
-#brand { display: flex; align-items: center; gap: 8px; opacity: 0.92; }
-#brand svg { width: 12px; height: 20px; color: var(--fg); }
-#brand span { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; }
-#brand span i { font-style: normal; color: var(--accent); }
+#titlebar button, #titlebar #addressform, #titlebar input, #titlebar #top-actions {
+  -webkit-app-region: no-drag;
+}
+#brand { display: flex; align-items: center; opacity: 0.85; padding: 0 4px; }
+#brand svg { width: 16px; height: 16px; color: var(--fg); }
+#nav { display: flex; align-items: center; gap: 2px; }
+#top-actions { display: flex; align-items: center; gap: 2px; margin-left: auto; }
 #drag-fill { flex: 1; height: 100%; }
+
+/* Zentrierte Adressleiste (Zen: Pill in der Mitte der Top-Leiste). */
+#titlebar #addressform {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  top: 50%; margin-top: -17px;
+  width: min(620px, 46vw); height: 34px;
+  padding: 0 12px;
+}
+#tabs-host { display: none; }
 #tabs-host { display: none; }
 
 /* ============================ Shell ============================ */
@@ -595,21 +607,18 @@ table.list td { padding: 7px 8px; border-bottom: 1px solid var(--hairline); }
 }
 
 /* ============================ Compact-Modus ============================ */
+/* Nur die Sidebar wird schmal; die Top-Leiste (Adressleiste) bleibt unberührt. */
 body.compact #chrome { width: var(--sidebar-compact); }
-body.compact #brand span,
-body.compact #addressform #address,
-body.compact #addressform #shield,
 body.compact .sb-label span:not(.sb-dot),
+body.compact .ws-name,
 body.compact .tab-title,
 body.compact .tab-flag,
 body.compact .tab-badge,
 body.compact .tab-close,
 body.compact .sb-newtab span { display: none; }
-body.compact #addressform { justify-content: center; padding: 0; }
 body.compact #pinned { grid-template-columns: 1fr; }
 body.compact .tab { justify-content: center; padding: 0; }
 body.compact .sb-newtab { justify-content: center; padding: 0; }
-body.compact #toolbar { flex-direction: column; }
 body.compact #sb-bottom { flex-direction: column; }
 
 /* ============================ Horizontal-Fallback ============================ */
